@@ -1,0 +1,27 @@
+{
+  "name": "golos-voter",
+  "version": "0.0.1",
+  "description": "Golos auto-voter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/Main.js"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "tabWidth": 4,
+    "semi": true,
+    "trailingComma": "es5"
+  },
+  "author": "Oleg Pavlov (Format-X22) [Golos Team]",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "ajv": "^6.5.1",
+    "colors": "^1.3.0",
+    "golos-js": "^0.6.3",
+    "moment": "^2.22.2"
+  },
+  "devDependencies": {
+    "prettier": "^1.13.5"
+  }
+}
