@@ -6,7 +6,7 @@ class MongoDB {
         return mongoose;
     }
 
-    static connect(connectionString) {
+    static async connect(connectionString) {
         return new Promise((resolve, reject) => {
             const connection = mongoose.connection;
 
@@ -23,6 +23,11 @@ class MongoDB {
 
             mongoose.connect(connectionString || 'mongodb://localhost/db');
         });
+    }
+
+    static async disconnect() {
+        await mongoose.disconnect();
+        logger.info('MongoDB disconnected.');
     }
 }
 

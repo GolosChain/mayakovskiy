@@ -1,6 +1,9 @@
 const logger = require('./core/Logger');
 const AbstractService = require('./core/AbstractService');
-const OfficialCustomerService = require('./officialСustomerService/Main');
+const RegistratorService = require('./registratorService/Main');
+const PlannerService = require('./plannerService/Main');
+const LikerService = require('./likerService/Main');
+const MongoDB = require('./core/MongoDB');
 
 class Main extends AbstractService {
     constructor() {
@@ -8,38 +11,29 @@ class Main extends AbstractService {
 
         // TODO configuration
 
-        this.services = [
-            new OfficialCustomerService(),
-            // any another services here
-        ];
+        this.nestedServices.push(
+            new RegistratorService(),
+            new PlannerService(LikerService)
+        );
 
-        process.on('exit', this.stop);
-        process.on('SIGINT', this.stop);
+        this.stopOnExit();
     }
 
-    start() {
-        logger.info('Start services...');
-
-        this.services.forEach(service => {
-            logger.info(`\tStart ${service.constructor.name}...`);
-            service.start();
-            logger.info(`\tThe ${service.constructor.name} done!`);
-        });
-
-        logger.info('Start services done!');
+    async start() {
+        await MongoDB.connect();
+        await this.startNested();
     }
 
-    stop() {
-        logger.info('Cleanup...');
-
-        this.services.forEach(service => {
-            logger.info(`\tStop ${service.constructor.name}...`);
-            service.stop();
-            logger.info(`\tThe ${service.constructor.name} done!`);
-        });
-
-        logger.info('Cleanup done!');
+    async stop() {
+        await this.stopNested();
+        await MongoDB.disconnect();
     }
 }
 
-new Main().start();
+new Main().start().then(
+    () => logger.info('Main service started!'),
+    () => {
+        logger.error('Main service failed!');
+        process.exit(99);
+    }
+);
