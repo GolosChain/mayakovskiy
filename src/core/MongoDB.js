@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const logger = require('Logger');
 
 class MongoDB {
-    static getMongoose() {
+    static get mongoose() {
         return mongoose;
     }
 

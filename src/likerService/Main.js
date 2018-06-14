@@ -1,6 +1,6 @@
 const AbstractService = require('../core/AbstractService');
 const BlockChain = require('../core/BlockChain');
-const mongoose = require('../core/MongoDB').getMongoose();
+const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
 
 class LikerService extends AbstractService {

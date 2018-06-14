@@ -1,14 +1,13 @@
 const AbstractService = require('../core/AbstractService');
 const BlockChain = require('../core/BlockChain');
-const mongoose = require('../core/MongoDB').getMongoose();
+const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
 
 class RegistratorService extends AbstractService {
     async start() {
         await this.restore();
 
-        BlockChain.eachBlock(async rawBlockData => {
-            const data = this._parseData(rawBlockData);
+        BlockChain.eachPostRealTime(async data => {
             let isValid;
 
             isValid = this._basicValidation(data);
@@ -34,10 +33,6 @@ class RegistratorService extends AbstractService {
 
     async restore() {
         // TODO restore from block chain
-    }
-
-    _parseData(rawBlockData) {
-        // TODO -
     }
 
     _basicValidation(data) {
