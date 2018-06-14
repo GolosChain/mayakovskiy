@@ -16,7 +16,6 @@
   "author": "Oleg Pavlov (Format-X22) [Golos Team]",
   "license": "GPL-3.0",
   "dependencies": {
-    "ajv": "^6.5.1",
     "colors": "^1.3.0",
     "golos-js": "^0.6.3",
     "moment": "^2.22.2",

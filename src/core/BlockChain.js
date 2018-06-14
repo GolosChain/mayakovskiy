@@ -1,5 +1,9 @@
 const W3CWebSocket = require('websocket').w3cwebsocket;
 
 class BlockChain {
-    // TODO body
+    // TODO rich high-level api for services
+
+    eachBlock(callback) {
+        // TODO -
+    }
 }
