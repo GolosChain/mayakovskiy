@@ -10,7 +10,7 @@ const BLOCK_GENERATION_AVERAGE_MS = 3000;
  * ws.golos.io.
  * Не требует создания экземпляра - все методы являются статик методами.
  */
-class BlockChain {
+class BlockChainConnector {
     /**
      * Подключение к ноде.
      * @returns {Promise<null/null>}
@@ -21,7 +21,7 @@ class BlockChain {
         return new Promise((resolve, reject) => {
             this._socket = new W3CWebSocket('wss://ws.golos.io');
             this._makeEventHandlers(resolve, reject);
-            this._socket.onmessage = this._messageHandler;
+            this._socket.onmessage = this._messageHandler.bind(this);
         });
     }
 
@@ -54,7 +54,7 @@ class BlockChain {
      * @param {Function} callback Первый аргумент будет содержать данные.
      */
     static eachBlockRealTime(callback) {
-        (async function init() {
+        (async () => {
             let currentBlockNumber = await this.getCurrentBlockNumber();
 
             (async function loop() {
@@ -63,12 +63,12 @@ class BlockChain {
                 if (data) {
                     currentBlockNumber++;
                     callback(data);
-                    setImmediate(loop);
+                    setImmediate(loop.bind(this));
                 } else {
-                    setTimeout(loop, BLOCK_GENERATION_AVERAGE_MS);
+                    setTimeout(loop.bind(this), BLOCK_GENERATION_AVERAGE_MS);
                 }
             }.bind(this)());
-        }.bind(this)());
+        })();
     }
 
     /**
@@ -92,8 +92,7 @@ class BlockChain {
             data.operations.forEach(operation => {
                 const [type, data] = operation;
 
-                // duck typing, no any way
-                if (type === 'comment' && data.title) {
+                if (type === 'comment' && !data.parent_author) {
                     callback(data);
                 }
             });
@@ -126,9 +125,7 @@ class BlockChain {
     }
 
     /**
-     * Низкоуровневая отправка данных на ноду,
-     * предполагает что уже назначен листенер на ответ
-     * с соответствующим id.
+     * Низкоуровневая отправка данных на ноду.
      * @param {Object} data Сырой объект JSON RPC 2.0
      * @returns {Promise<Object/null>}
      */
@@ -146,7 +143,7 @@ class BlockChain {
 
             setTimeout(() => {
                 if (this._listeners[data.id]) {
-                    logger.error('BlockChain socket timeout.');
+                    logger.error('BlockChainConnector socket timeout.');
                     reject();
                 }
             }, SOCKET_TIMEOUT);
@@ -160,13 +157,13 @@ class BlockChain {
         };
 
         this._socket.onopen = () => {
-            logger.info('BlockChain socket connection established.');
+            logger.info('BlockChainConnector socket connection established.');
             resolve();
         };
 
         this._socket.onclose = () => {
             this._disconnectCallback && this._disconnectCallback();
-            logger.info('BlockChain socket disconnected.');
+            logger.info('BlockChainConnector socket disconnected.');
         };
     }
 
@@ -181,13 +178,13 @@ class BlockChain {
             this._callListener(this._listeners[data.id], data);
             delete this._listeners[data.id];
         } else {
-            logger.error('Unknown BlockChain socket message id.');
+            logger.error('Unknown BlockChainConnector socket message id.');
         }
     }
 
     static _parseMessageData(rawData) {
         try {
-            return JSON.parse(rawData);
+            return JSON.parse(rawData.data);
         } catch (error) {
             logger.error(`Invalid BlockChain socket data - ${error}`);
             return null;
@@ -221,4 +218,4 @@ class BlockChain {
     }
 }
 
-module.exports = BlockChain;
+module.exports = BlockChainConnector;

@@ -4,7 +4,7 @@ const RegistratorService = require('./registratorService/Main');
 const PlannerService = require('./plannerService/Main');
 const LikerService = require('./likerService/Main');
 const MongoDB = require('./core/MongoDB');
-const BlockChain = require('./core/BlockChain');
+const BlockChainConnector = require('./core/BlockChainConnector');
 
 class Main extends AbstractService {
     constructor() {
