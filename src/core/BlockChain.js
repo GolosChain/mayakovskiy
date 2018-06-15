@@ -1,6 +1,9 @@
 const W3CWebSocket = require('websocket').w3cwebsocket;
 const logger = require('./Logger');
 
+const SOCKET_TIMEOUT = 5000;
+const BLOCK_GENERATION_AVERAGE_MS = 3000;
+
 class BlockChain {
     static async connect() {
         this._resetListenersMeta();
@@ -32,22 +35,76 @@ class BlockChain {
     }
 
     static eachBlockRealTime(callback) {
-        (function loop() {
-            // TODO -
+        (async function init() {
+            let currentBlockNumber = await this.getCurrentBlockNumber();
 
-            setImmediate(loop);
+            (async function loop() {
+                let data = await this.getBlockData(currentBlockNumber);
+
+                if (data) {
+                    currentBlockNumber++;
+                    callback(data);
+                    setImmediate(loop);
+                } else {
+                    setTimeout(loop, BLOCK_GENERATION_AVERAGE_MS);
+                }
+            }.bind(this)());
         }.bind(this)());
     }
 
     static eachTransactionRealTime(callback) {
         this.eachBlockRealTime(data => {
-            // TODO filtrate only blocks with transactions
+            data.transactions.forEach(transaction => callback(transaction));
         });
     }
 
     static eachPostRealTime(callback) {
         this.eachTransactionRealTime(data => {
-            // TODO filtrate only blocks with posts
+            data.operations.forEach(operation => {
+                const [type, data] = operation;
+
+                // duck typing, no any way
+                if (type === 'comment' && data.title) {
+                    callback(data);
+                }
+            });
+        });
+    }
+
+    static async getCurrentBlockNumber() {
+        const params = ['database_api', 'get_dynamic_global_properties', []];
+        const request = this._makeRequestObject('call', params);
+        const response = await this.sendOverJsonRpc(request);
+
+        return response.result.head_block_number;
+    }
+
+    static async getBlockData(blockNumber) {
+        const params = ['database_api', 'get_block', [blockNumber]];
+        const request = this._makeRequestObject('call', params);
+        const response = await this.sendOverJsonRpc(request);
+
+        return response.result;
+    }
+
+    static sendOverJsonRpc(data) {
+        return new Promise((resolve, reject) => {
+            this.socket.send(JSON.stringify(data));
+
+            this.listeners[data.id] = response => {
+                /* do not add any logic here -
+                   called after socket timeout too,
+                   but promise freeze after reject call,
+                   used for avoid unknown id */
+                resolve(response);
+            };
+
+            setTimeout(() => {
+                if (this.listeners[data.id]) {
+                    logger.error('BlockChain socket timeout.');
+                    reject();
+                }
+            }, SOCKET_TIMEOUT);
         });
     }
 
@@ -100,13 +157,22 @@ class BlockChain {
         }
     }
 
-    static makeListenerId() {
+    static _makeListenerId() {
         return ++this.lastListenerId;
     }
 
     static _resetListenersMeta() {
         this.listeners = {};
         this.lastListenerId = 0;
+    }
+
+    static _makeRequestObject(rpcMethod, paramsArray) {
+        return {
+            id: this._makeListenerId(),
+            method: rpcMethod,
+            params: paramsArray,
+            jsonrpc: '2.0',
+        };
     }
 }
 
