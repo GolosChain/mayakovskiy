@@ -4,17 +4,31 @@ const logger = require('./Logger');
 const SOCKET_TIMEOUT = 5000;
 const BLOCK_GENERATION_AVERAGE_MS = 3000;
 
+/**
+ * Единый коннектор к блокчейну, позволяет получать данные удобныйм способом
+ * через готовые асинхронные методы. Для работы использует публичную ноду
+ * ws.golos.io.
+ * Не требует создания экземпляра - все методы являются статик методами.
+ */
 class BlockChain {
+    /**
+     * Подключение к ноде.
+     * @returns {Promise<null/null>}
+     */
     static async connect() {
         this._resetListenersMeta();
 
         return new Promise((resolve, reject) => {
-            this.socket = new W3CWebSocket('wss://ws.golos.io');
+            this._socket = new W3CWebSocket('wss://ws.golos.io');
             this._makeEventHandlers(resolve, reject);
-            this.socket.onmessage = this._messageHandler;
+            this._socket.onmessage = this._messageHandler;
         });
     }
 
+    /**
+     * Отключение от ноды.
+     * @returns {Promise<null/null>}
+     */
     static async disconnect() {
         this._resetListenersMeta();
 
@@ -25,8 +39,8 @@ class BlockChain {
                     delete this._disconnectCallback;
                 };
 
-                this.socket.close();
-                delete this.socket;
+                this._socket.close();
+                delete this._socket;
             } catch (error) {
                 delete this._disconnectCallback;
                 reject();
@@ -34,6 +48,11 @@ class BlockChain {
         });
     }
 
+    /**
+     * Позволяет получать данные каждого блока в реальном времени
+     * начиная от блока в момент подключения.
+     * @param {Function} callback Первый аргумент будет содержать данные.
+     */
     static eachBlockRealTime(callback) {
         (async function init() {
             let currentBlockNumber = await this.getCurrentBlockNumber();
@@ -52,12 +71,22 @@ class BlockChain {
         }.bind(this)());
     }
 
+    /**
+     * Позволяет получать транзакции в реальном времени
+     * начиная от блока в момент подключения.
+     * @param {Function} callback Первый аргумент будет содержать данные.
+     */
     static eachTransactionRealTime(callback) {
         this.eachBlockRealTime(data => {
             data.transactions.forEach(transaction => callback(transaction));
         });
     }
 
+    /**
+     * Позволяет получать данные постов в реальном времени
+     * начиная от блока в момент подключения.
+     * @param {Function} callback Первый аргумент будет содержать данные.
+     */
     static eachPostRealTime(callback) {
         this.eachTransactionRealTime(data => {
             data.operations.forEach(operation => {
@@ -71,6 +100,10 @@ class BlockChain {
         });
     }
 
+    /**
+     * Позволяет получить номер последнего блока на данный момент времени.
+     * @returns {Promise<number/Error>}
+     */
     static async getCurrentBlockNumber() {
         const params = ['database_api', 'get_dynamic_global_properties', []];
         const request = this._makeRequestObject('call', params);
@@ -79,6 +112,11 @@ class BlockChain {
         return response.result.head_block_number;
     }
 
+    /**
+     * Позволяет получить данные указанного блока.
+     * @param {number} blockNumber Номер блока.
+     * @returns {Promise<Object/Error>}
+     */
     static async getBlockData(blockNumber) {
         const params = ['database_api', 'get_block', [blockNumber]];
         const request = this._makeRequestObject('call', params);
@@ -87,11 +125,18 @@ class BlockChain {
         return response.result;
     }
 
+    /**
+     * Низкоуровневая отправка данных на ноду,
+     * предполагает что уже назначен листенер на ответ
+     * с соответствующим id.
+     * @param {Object} data Сырой объект JSON RPC 2.0
+     * @returns {Promise<Object/null>}
+     */
     static sendOverJsonRpc(data) {
         return new Promise((resolve, reject) => {
-            this.socket.send(JSON.stringify(data));
+            this._socket.send(JSON.stringify(data));
 
-            this.listeners[data.id] = response => {
+            this._listeners[data.id] = response => {
                 /* do not add any logic here -
                    called after socket timeout too,
                    but promise freeze after reject call,
@@ -100,7 +145,7 @@ class BlockChain {
             };
 
             setTimeout(() => {
-                if (this.listeners[data.id]) {
+                if (this._listeners[data.id]) {
                     logger.error('BlockChain socket timeout.');
                     reject();
                 }
@@ -109,17 +154,17 @@ class BlockChain {
     }
 
     static _makeEventHandlers(resolve, reject) {
-        this.socket.onerror = error => {
+        this._socket.onerror = error => {
             logger.error(`BlockChain socket error - ${error}`);
-            reject();
+            reject(); // call on each error not a bug
         };
 
-        this.socket.onopen = () => {
+        this._socket.onopen = () => {
             logger.info('BlockChain socket connection established.');
             resolve();
         };
 
-        this.socket.onclose = () => {
+        this._socket.onclose = () => {
             this._disconnectCallback && this._disconnectCallback();
             logger.info('BlockChain socket disconnected.');
         };
@@ -132,9 +177,9 @@ class BlockChain {
             return;
         }
 
-        if (this.listeners[data.id]) {
-            this._callListener(this.listeners[data.id], data);
-            delete this.listeners[data.id];
+        if (this._listeners[data.id]) {
+            this._callListener(this._listeners[data.id], data);
+            delete this._listeners[data.id];
         } else {
             logger.error('Unknown BlockChain socket message id.');
         }
@@ -158,12 +203,12 @@ class BlockChain {
     }
 
     static _makeListenerId() {
-        return ++this.lastListenerId;
+        return ++this._lastListenerId;
     }
 
     static _resetListenersMeta() {
-        this.listeners = {};
-        this.lastListenerId = 0;
+        this._listeners = {};
+        this._lastListenerId = 0;
     }
 
     static _makeRequestObject(rpcMethod, paramsArray) {
