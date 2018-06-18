@@ -7,29 +7,14 @@ class RegistratorService extends AbstractService {
     async start() {
         await this.restore();
 
-        BlockChainMocks.eachBlock(async data => {
-            // TODO parse data
+        BlockChainMocks.eachBlock(data => {
+            data.transactions.forEach(async transaction => {
+                const posts = this._parsePosts(transaction);
 
-            let isValid;
-
-            isValid = this._basicValidation(data);
-
-            if (!isValid) return;
-
-            isValid = this._extraValidation(data);
-
-            if (!isValid) return;
-
-            try {
-                isValid = await this._remoteValidation(data);
-            } catch (error) {
-                logger.error(`Remote validation failed - ${error}`);
-                isValid = false;
-            }
-
-            if (!isValid) return;
-
-            this._register(data);
+                for (let postKey in posts) {
+                    await this._checkAndRegister(posts[postKey]);
+                }
+            });
         });
     }
 
@@ -37,21 +22,87 @@ class RegistratorService extends AbstractService {
         // TODO restore from block chain
     }
 
-    _basicValidation(data) {
-        // TODO -
+    _parsePosts(transaction) {
+        const posts = {};
+        const commentOptions = {};
+
+        transaction.operations.forEach(operation => {
+            const type = operation[0];
+            const body = operation[1];
+
+            if (type === 'comment' && body.parent_author === '') {
+                posts[body.permlink] = body;
+            }
+
+            if (type === 'comment_options') {
+                commentOptions[body.permlink] = body;
+            }
+        });
+
+        for (let permlink in commentOptions) {
+            if (posts[permlink]) {
+                posts[permlink].commentOptions = commentOptions[permlink];
+            }
+        }
+
+        return posts;
     }
 
-    _extraValidation(data) {
+    async _checkAndRegister(post) {
+        let isValid;
+
+        isValid = this._basicValidation(post);
+
+        if (!isValid) return;
+
+        isValid = this._extraValidation(post);
+
+        if (!isValid) return;
+
+        try {
+            isValid = await this._remoteValidation(post);
+        } catch (error) {
+            logger.error(`Remote validation failed - ${error}`);
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        this._register(post);
+    }
+
+    _basicValidation(post) {
+        let isBeneficiariesOk = false;
+
+        if (!post.commentOptions) {
+            return isBeneficiariesOk;
+        }
+
+        const extensions = post.commentOptions.extensions;
+
+        extensions.forEach((extension) => {
+            extension[1].beneficiaries.forEach(target => {
+                if (target.account === 'golosio' && target.weight === 1000) {
+                    isBeneficiariesOk = true;
+                }
+            });
+        });
+
+        return isBeneficiariesOk;
+    }
+
+    _extraValidation(post) {
         // no extra validators for now
         return true;
     }
 
-    _remoteValidation(data) {
+    _remoteValidation(post) {
         // no remote validators for now
         return Promise.resolve(true);
     }
 
-    _register(data) {
+    _register(post) {
+        console.log(post);
         // TODO -
     }
 }

@@ -55,3 +55,5 @@ class AbstractService {
         }, this.basicFirstLoopIterationTimeout);
     }
 }
+
+module.exports = AbstractService;
