@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const logger = require('Logger');
+const logger = require('./Logger');
 
 class MongoDB {
     static get mongoose() {
@@ -21,7 +21,7 @@ class MongoDB {
                 resolve();
             });
 
-            mongoose.connect(connectionString || 'mongodb://localhost/db');
+            mongoose.connect(connectionString || 'mongodb://0.0.0.0/admin');
         });
     }
 
