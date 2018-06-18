@@ -1,5 +1,4 @@
 const AbstractService = require('../core/AbstractService');
-const BlockChainConnector = require('../core/BlockChainConnector');
 const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
 

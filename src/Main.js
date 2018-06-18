@@ -4,7 +4,6 @@ const RegistratorService = require('./registratorService/Main');
 const PlannerService = require('./plannerService/Main');
 const LikerService = require('./likerService/Main');
 const MongoDB = require('./core/MongoDB');
-const BlockChainConnector = require('./core/BlockChainConnector');
 
 class Main extends AbstractService {
     constructor() {
@@ -21,7 +20,6 @@ class Main extends AbstractService {
     }
 
     async start() {
-        await BlockChain.connect();
         await MongoDB.connect();
         await this.startNested();
     }
@@ -29,7 +27,6 @@ class Main extends AbstractService {
     async stop() {
         await this.stopNested();
         await MongoDB.disconnect();
-        await BlockChain.disconnect();
     }
 }
 

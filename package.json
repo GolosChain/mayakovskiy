@@ -20,7 +20,8 @@
     "golos-js": "^0.6.3",
     "moment": "^2.22.2",
     "mongoose": "^5.1.5",
-    "websocket": "^1.0.26"
+    "websocket": "^1.0.26",
+    "ws": "^5.2.0"
   },
   "devDependencies": {
     "prettier": "^1.13.5"
