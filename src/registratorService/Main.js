@@ -1,7 +1,7 @@
 const AbstractService = require('../core/AbstractService');
 const BlockChainMocks = require('../core/BlockChainMocks');
-const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
+const Post = require('../model/Post');
 
 class RegistratorService extends AbstractService {
     async start() {
@@ -68,7 +68,7 @@ class RegistratorService extends AbstractService {
 
         if (!isValid) return;
 
-        this._register(post);
+        await this._register(post);
     }
 
     _basicValidation(post) {
@@ -101,9 +101,13 @@ class RegistratorService extends AbstractService {
         return Promise.resolve(true);
     }
 
-    _register(post) {
-        console.log(post);
-        // TODO -
+    async _register(post) {
+        let model = new Post({
+            author: post.author,
+            permlink: post.permlink
+        });
+
+        await model.save();
     }
 }
 

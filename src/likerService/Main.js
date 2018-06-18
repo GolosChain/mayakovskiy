@@ -1,6 +1,6 @@
 const AbstractService = require('../core/AbstractService');
-const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
+const Post = require('../model/Post');
 
 class LikerService extends AbstractService {
     constructor(plan) {
