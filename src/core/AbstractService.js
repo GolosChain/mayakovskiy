@@ -22,11 +22,11 @@ class AbstractService {
     async startNested() {
         logger.info('Start services...');
 
-        this.nestedServices.forEach(async service => {
-            logger.info(`\tStart ${service.constructor.name}...`);
+        for (let service of this.nestedServices) {
+            logger.info(`Start ${service.constructor.name}...`);
             await service.start();
-            logger.info(`\tThe ${service.constructor.name} done!`);
-        });
+            logger.info(`The ${service.constructor.name} done!`);
+        }
 
         logger.info('Start services done!');
     }
@@ -34,18 +34,17 @@ class AbstractService {
     async stopNested() {
         logger.info('Cleanup...');
 
-        this.nestedServices.forEach(async service => {
-            logger.info(`\tStop ${service.constructor.name}...`);
+        for (let service of this.nestedServices) {
+            logger.info(`Stop ${service.constructor.name}...`);
             await service.stop();
-            logger.info(`\tThe ${service.constructor.name} done!`);
-        });
+            logger.info(`The ${service.constructor.name} done!`);
+        }
 
         logger.info('Cleanup done!');
     }
 
     stopOnExit() {
-        process.on('exit', this.stop);
-        process.on('SIGINT', this.stop);
+        process.on('SIGINT', this.stop.bind(this));
     }
 
     eachTriggeredTime(callback) {

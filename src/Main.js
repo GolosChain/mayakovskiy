@@ -27,6 +27,7 @@ class Main extends AbstractService {
     async stop() {
         await this.stopNested();
         await MongoDB.disconnect();
+        process.exit(0);
     }
 }
 
