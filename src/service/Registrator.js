@@ -93,7 +93,7 @@ class Registrator extends BasicService {
     }
 
     async _validatePostCount(post) {
-        const dayStart = Moments.currentDayStart();
+        const dayStart = Moments.currentDayStart;
         const request = { author: post.author, date: { $gt: dayStart } };
         const count = await Post.find(request).count();
 

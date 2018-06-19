@@ -1,15 +1,27 @@
 const moment = require('moment');
 
 class Moments {
-    static currentDayStart() {
+    static get currentDayStart() {
         return moment()
             .utc()
             .startOf('day')
             .hour(this._dayStart);
     }
 
-    static lastDayStart() {
-        return this.currentDayStart().add(-1, 'days');
+    static get lastDayStart() {
+        return this.currentDayStart().subtract(1, 'day');
+    }
+
+    static get remainedToNextDay() {
+        return moment()
+            .startOf('day')
+            .hour(this._dayStart)
+            .add(1, 'day')
+            .diff(moment());
+    }
+
+    static get oneDay() {
+        return moment.duration(1, 'day');
     }
 
     static get _dayStart() {

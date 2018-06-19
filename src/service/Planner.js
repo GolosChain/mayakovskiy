@@ -14,7 +14,7 @@ class Planner extends BasicService {
     async start() {
         await this.restore();
 
-        // TODO start loop
+        this.startLoop(Moments.oneDay, Moments.remainedToNextDay)
     }
 
     async restore() {
@@ -37,8 +37,8 @@ class Planner extends BasicService {
         return await Post.find(
             {
                 date: {
-                    $gt: Moments.lastDayStart(),
-                    $lt: Moments.currentDayStart(),
+                    $gt: Moments.lastDayStart,
+                    $lt: Moments.currentDayStart,
                 },
                 plan: null,
             },
