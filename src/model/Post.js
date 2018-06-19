@@ -1,23 +1,26 @@
-const mongoose = require('../core/MongoDB').mongoose;
+const MongoDB = require('../core/MongoDB');
 
-module.exports = mongoose.model(
-    'Post',
-    new mongoose.Schema({
-        author: {
-            type: String,
-            required: true,
-        },
-        permlink: {
-            type: String,
-            required: true,
-        },
-        processed: {
-            type: Boolean,
-            default: false,
-        },
-        date: {
-            type: Date,
-            default: Date.now()
-        }
-    })
-);
+module.exports = MongoDB.makeModel('Post', {
+    author: {
+        type: String,
+        required: true,
+        index: true
+    },
+    permlink: {
+        type: String,
+        required: true,
+    },
+    processed: {
+        type: Boolean,
+        default: false,
+    },
+    plan: {
+        type: MongoDB.type.ObjectId,
+        default: null,
+        index: { sparse: true },
+    },
+    date: {
+        type: Date,
+        default: Date.now(),
+    },
+});

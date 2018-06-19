@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const logger = require('./Logger');
 
 class MongoDB {
-    static get mongoose() {
-        return mongoose;
-    }
-
     static async connect(connectionString) {
         return new Promise((resolve, reject) => {
             const connection = mongoose.connection;
@@ -28,6 +24,14 @@ class MongoDB {
     static async disconnect() {
         await mongoose.disconnect();
         logger.info('MongoDB disconnected.');
+    }
+
+    static makeModel(name, config) {
+        mongoose.model(name, new mongoose.Schema(config));
+    }
+
+    static get type() {
+        return mongoose.Schema.Types;
     }
 }
 
