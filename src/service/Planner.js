@@ -1,10 +1,10 @@
-const AbstractService = require('../core/AbstractService');
+const BasicService = require('../core/BasicService');
 const logger = require('../core/Logger');
 const Moments = require('../core/Moments');
 const Post = require('../model/Post');
 const Plan = require('../model/Plan');
 
-class Planner extends AbstractService {
+class Planner extends BasicService {
     constructor(LikerService) {
         super();
 
@@ -14,26 +14,23 @@ class Planner extends AbstractService {
     async start() {
         await this.restore();
 
-        this.eachTriggeredTime(async () => {
-            logger.log('Make new plan...');
-
-            const data = await this._aggregateData();
-            const plan = await this._makePlan(data);
-            const liker = new this._likerService(plan);
-
-            logger.log('Making plan done, start new Liker');
-
-            await liker.start();
-        });
+        // TODO start loop
     }
 
     async restore() {
         // TODO restore from last done
     }
 
-    eachTriggeredTime(callback) {
-        // TODO calc interval
-        // TODO super.eachTriggeredTime(callback);
+    async iteration() {
+        logger.log('Make new plan...');
+
+        const data = await this._aggregateData();
+        const plan = await this._makePlan(data);
+        const liker = new this._likerService(plan);
+
+        logger.log('Making plan done, start new Liker');
+
+        await liker.start();
     }
 
     async _aggregateData() {

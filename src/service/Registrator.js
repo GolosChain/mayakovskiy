@@ -1,9 +1,9 @@
-const AbstractService = require('../core/AbstractService');
+const BasicService = require('../core/BasicService');
 const BlockChainMocks = require('../core/BlockChainMocks');
 const Moments = require('../core/Moments');
 const Post = require('../model/Post');
 
-class Registrator extends AbstractService {
+class Registrator extends BasicService {
     async start() {
         await this.restore();
 
