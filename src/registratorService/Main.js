@@ -1,6 +1,6 @@
+const moment = require('moment');
 const AbstractService = require('../core/AbstractService');
 const BlockChainMocks = require('../core/BlockChainMocks');
-const logger = require('../core/Logger');
 const Post = require('../model/Post');
 
 class RegistratorService extends AbstractService {
@@ -49,62 +49,70 @@ class RegistratorService extends AbstractService {
     }
 
     async _checkAndRegister(post) {
-        let isValid;
-
-        isValid = this._basicValidation(post);
-
-        if (!isValid) return;
-
-        isValid = this._extraValidation(post);
-
-        if (!isValid) return;
-
-        try {
-            isValid = await this._remoteValidation(post);
-        } catch (error) {
-            logger.error(`Remote validation failed - ${error}`);
-            isValid = false;
+        if (!(await this._basicValidation(post))) {
+            return;
         }
 
-        if (!isValid) return;
+        if (!(await this._remoteValidation(post))) {
+            return;
+        }
 
         await this._register(post);
     }
 
-    _basicValidation(post) {
-        let isBeneficiariesOk = false;
+    async _basicValidation(post) {
+        if (!this._validateBeneficiaries(post)) {
+            return false;
+        }
+
+        if (!(await this._validatePostCount(post))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    _validateBeneficiaries(post) {
+        let valid = false;
 
         if (!post.commentOptions) {
-            return isBeneficiariesOk;
+            return valid;
         }
 
         const extensions = post.commentOptions.extensions;
 
-        extensions.forEach((extension) => {
+        extensions.forEach(extension => {
             extension[1].beneficiaries.forEach(target => {
                 if (target.account === 'golosio' && target.weight === 1000) {
-                    isBeneficiariesOk = true;
+                    valid = true;
                 }
             });
         });
 
-        return isBeneficiariesOk;
+        return valid;
     }
 
-    _extraValidation(post) {
-        // no extra validators for now
-        return true;
+    async _validatePostCount(post) {
+        const offset = process.env.DAY_START || 3;
+        const dayEdge = moment()
+            .utc()
+            .startOf('day')
+            .hour(offset);
+        const request = { author: post.author, date: { $gt: dayEdge } };
+        const count = await Post.find(request).count();
+
+        return count === 0;
     }
 
-    _remoteValidation(post) {
+    async _remoteValidation(post) {
         // no remote validators for now
-        return Promise.resolve(true);
+        return true;
     }
 
     async _register(post) {
         let model = new Post({
             author: post.author,
-            permlink: post.permlink
+            permlink: post.permlink,
         });
 
         await model.save();
