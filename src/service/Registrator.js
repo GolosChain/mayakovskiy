@@ -1,6 +1,6 @@
-const moment = require('moment');
 const AbstractService = require('../core/AbstractService');
 const BlockChainMocks = require('../core/BlockChainMocks');
+const Moments = require('../core/Moments');
 const Post = require('../model/Post');
 
 class Registrator extends AbstractService {
@@ -93,12 +93,8 @@ class Registrator extends AbstractService {
     }
 
     async _validatePostCount(post) {
-        const offset = process.env.DAY_START || 3;
-        const dayEdge = moment()
-            .utc()
-            .startOf('day')
-            .hour(offset);
-        const request = { author: post.author, date: { $gt: dayEdge } };
+        const dayStart = Moments.currentDayStart();
+        const request = { author: post.author, date: { $gt: dayStart } };
         const count = await Post.find(request).count();
 
         return count === 0;
