@@ -1,5 +1,5 @@
 const logger = require('./core/Logger');
-const AbstractService = require('./core/AbstractService');
+const AbstractService = require('./core/BasicService');
 const Registrator = require('./service/Registrator');
 const Planner = require('./service/Planner');
 const Liker = require('./service/Liker');

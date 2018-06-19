@@ -1,10 +1,10 @@
 const logger = require('./Logger');
 
-class AbstractService {
+class BasicService {
     constructor() {
         this.nestedServices = [];
-        this.basicLoopInterval = Infinity;
-        this.basicFirstLoopIterationTimeout = 0;
+        this._loopInterval = Infinity;
+        this._firstIterationTimeout = 0;
     }
 
     async start() {
@@ -47,12 +47,30 @@ class AbstractService {
         process.on('SIGINT', this.stop.bind(this));
     }
 
-    eachTriggeredTime(callback) {
+    async iteration() {
+        throw 'Empty iteration body';
+    }
+
+    startLoop(interval, firstIterationTimeout) {
+        this._loopInterval = interval || Infinity;
+        this._firstIterationTimeout = firstIterationTimeout || 0;
+
+        this._eachTriggeredTime(this.iteration);
+    }
+
+    stopLoop() {
+        clearInterval(this._loopId);
+    }
+
+    _eachTriggeredTime(callback) {
+        const interval = this._loopInterval;
+        const timeout = this._firstIterationTimeout;
+
         setTimeout(() => {
-            callback();
-            setInterval(callback, this.basicLoopInterval);
-        }, this.basicFirstLoopIterationTimeout);
+            callback.bind(this);
+            this._loopId = setInterval(callback.bind(this), interval);
+        }, timeout);
     }
 }
 
-module.exports = AbstractService;
+module.exports = BasicService;
