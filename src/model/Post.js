@@ -4,7 +4,7 @@ module.exports = MongoDB.makeModel('Post', {
     author: {
         type: String,
         required: true,
-        index: true
+        index: true,
     },
     permlink: {
         type: String,

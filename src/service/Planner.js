@@ -14,7 +14,7 @@ class Planner extends BasicService {
     async start() {
         await this.restore();
 
-        this.startLoop(Moments.oneDay, Moments.remainedToNextDay)
+        this.startLoop(Moments.oneDay, Moments.remainedToNextDay);
     }
 
     async restore() {
