@@ -4,7 +4,7 @@ class AbstractService {
     constructor() {
         this.nestedServices = [];
         this.basicLoopInterval = Infinity;
-        this.basicFirstLoopIterationTimeout = Infinity;
+        this.basicFirstLoopIterationTimeout = 0;
     }
 
     async start() {

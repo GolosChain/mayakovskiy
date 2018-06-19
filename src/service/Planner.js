@@ -1,6 +1,8 @@
 const AbstractService = require('../core/AbstractService');
-const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
+const Moments = require('../core/Moments');
+const Post = require('../model/Post');
+const Plan = require('../model/Plan');
 
 class Planner extends AbstractService {
     constructor(LikerService) {
@@ -13,9 +15,13 @@ class Planner extends AbstractService {
         await this.restore();
 
         this.eachTriggeredTime(async () => {
+            logger.log('Make new plan...');
+
             const data = await this._aggregateData();
             const plan = await this._makePlan(data);
             const liker = new this._likerService(plan);
+
+            logger.log('Making plan done, start new Liker');
 
             await liker.start();
         });
@@ -27,16 +33,40 @@ class Planner extends AbstractService {
 
     eachTriggeredTime(callback) {
         // TODO calc interval
-
-        super.eachTriggeredTime(callback);
+        // TODO super.eachTriggeredTime(callback);
     }
 
-    _aggregateData() {
-        // TODO -
+    async _aggregateData() {
+        return await Post.find(
+            {
+                date: {
+                    $gt: Moments.lastDayStart(),
+                    $lt: Moments.currentDayStart(),
+                },
+                plan: null,
+            },
+            {
+                _id: true,
+            }
+        );
     }
 
-    _makePlan(data) {
-        // TODO -
+    async _makePlan(data) {
+        const virtualPlan = new Plan({
+            step: null, // TODO -
+            weight: null, // TODO -
+        });
+
+        const plan = await virtualPlan.save();
+
+        for (let item of data) {
+            const { _id: id } = item;
+            const update = { $set: { plan: plan._id } };
+
+            await Post.findByIdAndUpdate(id, update);
+        }
+
+        return plan;
     }
 }
 
