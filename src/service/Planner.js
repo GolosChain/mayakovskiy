@@ -2,7 +2,7 @@ const AbstractService = require('../core/AbstractService');
 const mongoose = require('../core/MongoDB').mongoose;
 const logger = require('../core/Logger');
 
-class PlannerService extends AbstractService {
+class Planner extends AbstractService {
     constructor(LikerService) {
         super();
 
@@ -40,4 +40,4 @@ class PlannerService extends AbstractService {
     }
 }
 
-module.exports = PlannerService;
+module.exports = Planner;

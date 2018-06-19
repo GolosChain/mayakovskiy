@@ -3,7 +3,7 @@ const AbstractService = require('../core/AbstractService');
 const BlockChainMocks = require('../core/BlockChainMocks');
 const Post = require('../model/Post');
 
-class RegistratorService extends AbstractService {
+class Registrator extends AbstractService {
     async start() {
         await this.restore();
 
@@ -119,4 +119,4 @@ class RegistratorService extends AbstractService {
     }
 }
 
-module.exports = RegistratorService;
+module.exports = Registrator;

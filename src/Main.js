@@ -1,8 +1,8 @@
 const logger = require('./core/Logger');
 const AbstractService = require('./core/AbstractService');
-const RegistratorService = require('./registratorService/Main');
-const PlannerService = require('./plannerService/Main');
-const LikerService = require('./likerService/Main');
+const Registrator = require('./service/Registrator');
+const Planner = require('./service/Planner');
+const Liker = require('./service/Liker');
 const MongoDB = require('./core/MongoDB');
 
 class Main extends AbstractService {
@@ -12,8 +12,8 @@ class Main extends AbstractService {
         // TODO configuration
 
         this.nestedServices.push(
-            new RegistratorService()
-            // TODO new PlannerService(LikerService)
+            new Registrator()
+            // TODO new Planner(Liker)
         );
 
         this.stopOnExit();

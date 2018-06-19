@@ -2,7 +2,7 @@ const AbstractService = require('../core/AbstractService');
 const logger = require('../core/Logger');
 const Post = require('../model/Post');
 
-class LikerService extends AbstractService {
+class Liker extends AbstractService {
     constructor(plan) {
         super();
 
@@ -45,4 +45,4 @@ class LikerService extends AbstractService {
     }
 }
 
-module.exports = LikerService;
+module.exports = Liker;
