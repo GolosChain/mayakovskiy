@@ -1,3 +1,4 @@
+const golos = require('golos-js');
 const BasicService = require('../core/BasicService');
 const BlockChainMocks = require('../core/BlockChainMocks');
 const Moments = require('../core/Moments');
@@ -69,11 +70,20 @@ class Registrator extends BasicService {
             return;
         }
 
-        const target = this._syncStack.pop();
+        // async lightweight step-by-step data sync strategy
+        const blockNum = this._syncStack.pop();
 
-        // TODO -
+        logger.log(`Restore missed registration for block - ${blockNum}`);
 
-        setImmediate(this._sync.bind(this));
+        golos.api.getBlock(blockNum, (err, data) => {
+            setImmediate(this._sync.bind(this));
+
+            if (err) {
+                throw err;
+            }
+
+            this._blockHandler(data);
+        });
     }
 
     _blockHandler(data) {
