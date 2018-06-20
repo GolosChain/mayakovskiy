@@ -2,10 +2,6 @@ const golos = require('golos-js');
 const BasicService = require('../core/BasicService');
 const logger = require('../core/Logger');
 const Post = require('../model/Post');
-const Plan = require('../model/Plan');
-
-const MARK_PROCESSED = { $set: { processed: true } };
-const MARK_DONE = { $set: { done: true } };
 
 class Liker extends BasicService {
     constructor(plan) {
@@ -26,42 +22,38 @@ class Liker extends BasicService {
     }
 
     async iteration() {
-        const { id, author, permlink, weight } = await this._getTarget();
+        const record = await this._getTarget();
 
-        if (!id) {
+        if (!record) {
             this.stopLoop();
             await this._markPlanAsDone();
 
             return;
         }
 
-        logger.log(`It's Like machine time! ;) Target - ${author} : ${id}`);
+        const targetMsg = `Target - ${record.author} (id: ${record.id})`;
 
-        await this._likePost(author, permlink, weight);
-        await this._markPostAsLiked(id);
+        logger.log(`It's Like machine time! ;) ${targetMsg}`);
+
+        await this._likePost(record);
+        await this._markPostAsLiked(record);
     }
 
     async _getTarget() {
-        const query = { plan: this.plan._id };
+        const query = { plan: this._plan._id, processed: false };
         const projection = { author: true, permlink: true };
-        const { _id, author, permlink } = await Post.findOne(query, projection);
 
-        return {
-            id: _id,
-            author,
-            permlink,
-            weight: this._plan.weight,
-        };
+        return await Post.findOne(query, projection);
     }
 
-    _likePost(author, permlink, weight) {
+    _likePost(record) {
         return new Promise((resolve, reject) => {
             golos.broadcast.vote(
                 process.env.WIF,
                 process.env.LOGIN,
-                author,
-                permlink,
-                weight,
+                record.author,
+                record.permlink,
+                this._plan.weight,
                 err => {
                     if (err) {
                         reject(err);
@@ -73,8 +65,10 @@ class Liker extends BasicService {
         });
     }
 
-    async _markPostAsLiked(id) {
-        await Post.findByIdAndUpdate(id, MARK_PROCESSED);
+    async _markPostAsLiked(record) {
+        record.processed = true;
+
+        await record.save();
     }
 
     async _markPlanAsDone() {
@@ -83,11 +77,12 @@ class Liker extends BasicService {
         // Filter for really high load
         if (this._done) {
             return;
-        } else {
-            this._done = true;
         }
 
-        await Plan.findByIdAndUpdate(id, MARK_DONE);
+        this._done = true;
+        this._plan.done = true;
+
+        await this._plan.save();
 
         logger.info(`Plan ${id} is done!`);
     }

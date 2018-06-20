@@ -4,11 +4,16 @@ const Moments = require('../core/Moments');
 const Post = require('../model/Post');
 const Plan = require('../model/Plan');
 
+// BlockChain constants
+const THE_100_PERCENT_DECIMALS = 100 * 100;
+const VOTE_BY_DAY_WITH_MAX_WEIGHT = 40;
+const DAY_VOTE_WEIGHT = THE_100_PERCENT_DECIMALS * VOTE_BY_DAY_WITH_MAX_WEIGHT;
+
 class Planner extends BasicService {
-    constructor(LikerService) {
+    constructor(Liker) {
         super();
 
-        this._likerService = LikerService;
+        this._liker = Liker;
     }
 
     async start() {
@@ -32,7 +37,7 @@ class Planner extends BasicService {
         }
 
         const plan = await this._makePlan(data);
-        const liker = new this._likerService(plan);
+        const liker = new this._liker(plan);
 
         logger.log('Making plan done, start new Liker');
 
@@ -57,11 +62,11 @@ class Planner extends BasicService {
     async _makePlan(data) {
         const count = data.length;
         const step = Math.floor(Moments.oneDay / count);
-        let weight = Math.floor((100 * 40) / count);
+        let weight = Math.floor(DAY_VOTE_WEIGHT / count);
 
         // less then 40 posts
-        if (weight > 100) {
-            weight = 100;
+        if (weight > THE_100_PERCENT_DECIMALS) {
+            weight = THE_100_PERCENT_DECIMALS;
         }
 
         const plan = new Plan({ step, weight });

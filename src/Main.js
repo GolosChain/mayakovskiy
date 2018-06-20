@@ -9,10 +9,7 @@ class Main extends AbstractService {
     constructor() {
         super();
 
-        // TODO configuration
-
         this.nestedServices.push(new Registrator(), new Planner(Liker));
-
         this.stopOnExit();
     }
 
