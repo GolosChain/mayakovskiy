@@ -9,7 +9,7 @@ class Moments {
     }
 
     static get lastDayStart() {
-        return this.currentDayStart().subtract(1, 'day');
+        return this.currentDayStart.subtract(1, 'day');
     }
 
     static get remainedToNextDay() {

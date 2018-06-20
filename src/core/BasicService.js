@@ -3,8 +3,6 @@ const logger = require('./Logger');
 class BasicService {
     constructor() {
         this.nestedServices = [];
-        this._loopInterval = Infinity;
-        this._firstIterationTimeout = 0;
     }
 
     async start() {
@@ -51,25 +49,15 @@ class BasicService {
         throw 'Empty iteration body';
     }
 
-    startLoop(interval, firstIterationTimeout) {
-        this._loopInterval = interval || Infinity;
-        this._firstIterationTimeout = firstIterationTimeout || 0;
-
-        this._eachTriggeredTime(this.iteration);
+    startLoop(firstIterationTimeout = 0, interval = Infinity) {
+        setTimeout(async () => {
+            await this.iteration();
+            this._loopId = setInterval(this.iteration.bind(this), interval);
+        }, firstIterationTimeout);
     }
 
     stopLoop() {
         clearInterval(this._loopId);
-    }
-
-    _eachTriggeredTime(callback) {
-        const interval = this._loopInterval;
-        const timeout = this._firstIterationTimeout;
-
-        setTimeout(() => {
-            callback.bind(this);
-            this._loopId = setInterval(callback.bind(this), interval);
-        }, timeout);
     }
 }
 

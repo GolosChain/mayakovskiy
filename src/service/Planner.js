@@ -14,7 +14,7 @@ class Planner extends BasicService {
     async start() {
         await this.restore();
 
-        this.startLoop(Moments.oneDay, Moments.remainedToNextDay);
+        this.startLoop(Moments.remainedToNextDay, Moments.oneDay);
     }
 
     async restore() {
@@ -25,6 +25,12 @@ class Planner extends BasicService {
         logger.log('Make new plan...');
 
         const data = await this._aggregateData();
+
+        if (data.length === 0) {
+            logger.error('No posts from golos.io?!');
+            return;
+        }
+
         const plan = await this._makePlan(data);
         const liker = new this._likerService(plan);
 
@@ -34,7 +40,7 @@ class Planner extends BasicService {
     }
 
     async _aggregateData() {
-        return await Post.find(
+        return (await Post.find(
             {
                 date: {
                     $gt: Moments.lastDayStart,
@@ -45,23 +51,30 @@ class Planner extends BasicService {
             {
                 _id: true,
             }
-        );
+        )).map(doc => doc._id);
     }
 
     async _makePlan(data) {
-        const virtualPlan = new Plan({
-            step: null, // TODO -
-            weight: null, // TODO -
-        });
+        const count = data.length;
+        const step = Math.floor(Moments.oneDay / count);
+        let weight = Math.floor((100 * 40) / count);
 
-        const plan = await virtualPlan.save();
+        // less then 40 posts
+        if (weight > 100) {
+            weight = 100;
+        }
 
-        for (let item of data) {
-            const { _id: id } = item;
+        const plan = new Plan({ step, weight });
+
+        await plan.save();
+
+        for (let id of data) {
             const update = { $set: { plan: plan._id } };
-
             await Post.findByIdAndUpdate(id, update);
         }
+
+        plan.processed = true;
+        plan.save();
 
         return plan;
     }
