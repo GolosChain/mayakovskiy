@@ -27,7 +27,7 @@ class MongoDB {
     }
 
     static makeModel(name, config) {
-        mongoose.model(name, new mongoose.Schema(config));
+        return mongoose.model(name, new mongoose.Schema(config));
     }
 
     static get type() {
