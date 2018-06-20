@@ -5,6 +5,13 @@ const logger = require('../core/Logger');
 const Post = require('../model/Post');
 
 class Registrator extends BasicService {
+    constructor() {
+        super();
+
+        this._syncedBlockNum = 0;
+        this._syncStack = [];
+    }
+
     async start() {
         await this.restore();
 
@@ -23,8 +30,6 @@ class Registrator extends BasicService {
 
         if (postAtLastBlock) {
             this._syncedBlockNum = postAtLastBlock.blockNum;
-        } else {
-            this._syncedBlockNum = 0;
         }
     }
 
@@ -43,12 +48,32 @@ class Registrator extends BasicService {
         }
 
         if (previousBlockNum !== this._syncedBlockNum) {
+            this._populateSyncQueue();
             this._sync();
+
+            this._syncedBlockNum = previousBlockNum;
+        }
+    }
+
+    _populateSyncQueue() {
+        const from = this._syncedBlockNum + 1;
+        const to = this._currentBlockNum - 1;
+
+        for (let i = from; i < to; i++) {
+            this._syncStack.push(i);
         }
     }
 
     _sync() {
+        if (this._syncStack.length === 0) {
+            return;
+        }
+
+        const target = this._syncStack.pop();
+
         // TODO -
+
+        setImmediate(this._sync.bind(this));
     }
 
     _blockHandler(data) {
