@@ -8,6 +8,11 @@ class Registrator extends BasicService {
         await this.restore();
 
         BlockChainMocks.eachBlock(data => {
+            const previousHash = data.previous;
+            const previousBlockNum = parseInt(previousHash.slice(0, 8), 16);
+
+            this._currentBlockNum = previousBlockNum + 1;
+
             data.transactions.forEach(async transaction => {
                 const posts = this._parsePosts(transaction);
 
@@ -109,6 +114,7 @@ class Registrator extends BasicService {
         let model = new Post({
             author: post.author,
             permlink: post.permlink,
+            blockNum: this._currentBlockNum
         });
 
         await model.save();
