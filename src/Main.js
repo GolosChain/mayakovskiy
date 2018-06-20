@@ -27,8 +27,8 @@ class Main extends AbstractService {
 
 new Main().start().then(
     () => logger.info('Main service started!'),
-    () => {
-        logger.error('Main service failed!');
+    (error) => {
+        logger.error(`Main service failed - ${error}`);
         process.exit(99);
     }
 );

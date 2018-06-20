@@ -48,7 +48,6 @@ class Planner extends BasicService {
         return (await Post.find(
             {
                 date: {
-                    $gt: Moments.lastDayStart,
                     $lt: Moments.currentDayStart,
                 },
                 plan: null,

@@ -1,6 +1,7 @@
 const BasicService = require('../core/BasicService');
 const BlockChainMocks = require('../core/BlockChainMocks');
 const Moments = require('../core/Moments');
+const logger = require('../core/Logger');
 const Post = require('../model/Post');
 
 class Registrator extends BasicService {
@@ -8,23 +9,56 @@ class Registrator extends BasicService {
         await this.restore();
 
         BlockChainMocks.eachBlock(data => {
-            const previousHash = data.previous;
-            const previousBlockNum = parseInt(previousHash.slice(0, 8), 16);
-
-            this._currentBlockNum = previousBlockNum + 1;
-
-            data.transactions.forEach(async transaction => {
-                const posts = this._parsePosts(transaction);
-
-                for (let postKey in posts) {
-                    await this._checkAndRegister(posts[postKey]);
-                }
-            });
+            this._trySync(data);
+            this._blockHandler(data);
         });
     }
 
     async restore() {
-        // TODO restore from block chain
+        const postAtLastBlock = await Post.findOne(
+            {},
+            { blockNum: true, _id: false },
+            { sort: { blockNum: -1 } }
+        );
+
+        if (postAtLastBlock) {
+            this._syncedBlockNum = postAtLastBlock.blockNum;
+        } else {
+            this._syncedBlockNum = 0;
+        }
+    }
+
+    _trySync(data) {
+        const previousHash = data.previous;
+        const previousBlockNum = parseInt(previousHash.slice(0, 8), 16);
+
+        this._currentBlockNum = previousBlockNum + 1;
+
+        if (!this._syncedBlockNum) {
+            logger.log(
+                'Empty Post collection,',
+                `then start sync from block ${previousBlockNum}`
+            );
+            this._syncedBlockNum = previousBlockNum;
+        }
+
+        if (previousBlockNum !== this._syncedBlockNum) {
+            this._sync();
+        }
+    }
+
+    _sync() {
+        // TODO -
+    }
+
+    _blockHandler(data) {
+        data.transactions.forEach(async transaction => {
+            const posts = this._parsePosts(transaction);
+
+            for (let postKey in posts) {
+                await this._checkAndRegister(posts[postKey]);
+            }
+        });
     }
 
     _parsePosts(transaction) {
@@ -114,7 +148,7 @@ class Registrator extends BasicService {
         let model = new Post({
             author: post.author,
             permlink: post.permlink,
-            blockNum: this._currentBlockNum
+            blockNum: this._currentBlockNum,
         });
 
         await model.save();

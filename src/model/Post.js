@@ -26,6 +26,6 @@ module.exports = MongoDB.makeModel('Post', {
     blockNum: {
         type: Number,
         required: true,
-        index: true
-    }
+        index: -1,
+    },
 });
