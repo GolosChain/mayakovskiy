@@ -23,8 +23,8 @@ class Planner extends BasicService {
     }
 
     async restore() {
-        await this.dropCorruptedPlans();
-        await this.restartPendingPlans();
+        await this._dropCorruptedPlans();
+        await this._restartPendingPlans();
     }
 
     async iteration() {
@@ -84,7 +84,7 @@ class Planner extends BasicService {
         return plan;
     }
 
-    async dropCorruptedPlans() {
+    async _dropCorruptedPlans() {
         const corruptedPlans = await Plan.find(
             { processed: false },
             { _id: true }
@@ -99,15 +99,19 @@ class Planner extends BasicService {
                 await post.save();
             }
 
+            logger.log(`Drop corrupted plan - ${plan._id}`);
+
             plan.remove();
         }
     }
 
-    async restartPendingPlans() {
+    async _restartPendingPlans() {
         const pendingPlans = await Plan.find({ processed: true, done: false });
 
         for (let plan of pendingPlans) {
             const liker = new this._liker(plan);
+
+            logger.log(`Restart pending plan - ${plan._id}`);
 
             await liker.start();
         }
