@@ -23,7 +23,22 @@ class Planner extends BasicService {
     }
 
     async restore() {
-        // TODO restore from last done
+        const corruptedPlans = (await Plan.find(
+            { processed: false },
+            { _id: true }
+        )).map(doc => doc._id);
+
+        for (let plan of corruptedPlans) {
+            const posts = await Post.find({ plan: plan._id });
+
+            for (let post of posts) {
+                post.plan = null;
+
+                await post.save();
+            }
+
+            plan.remove();
+        }
     }
 
     async iteration() {
