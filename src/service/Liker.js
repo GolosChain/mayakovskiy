@@ -12,13 +12,7 @@ class Liker extends BasicService {
     }
 
     async start() {
-        await this.restore();
-
         this.startLoop(0, this._plan.step);
-    }
-
-    async restore() {
-        // TODO restore from last plan
     }
 
     async iteration() {

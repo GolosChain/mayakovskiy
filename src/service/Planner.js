@@ -23,22 +23,8 @@ class Planner extends BasicService {
     }
 
     async restore() {
-        const corruptedPlans = (await Plan.find(
-            { processed: false },
-            { _id: true }
-        )).map(doc => doc._id);
-
-        for (let plan of corruptedPlans) {
-            const posts = await Post.find({ plan: plan._id });
-
-            for (let post of posts) {
-                post.plan = null;
-
-                await post.save();
-            }
-
-            plan.remove();
-        }
+        await this.dropCorruptedPlans();
+        await this.restartPendingPlans();
     }
 
     async iteration() {
@@ -96,6 +82,35 @@ class Planner extends BasicService {
         plan.save();
 
         return plan;
+    }
+
+    async dropCorruptedPlans() {
+        const corruptedPlans = await Plan.find(
+            { processed: false },
+            { _id: true }
+        );
+
+        for (let plan of corruptedPlans) {
+            const posts = await Post.find({ plan: plan._id });
+
+            for (let post of posts) {
+                post.plan = null;
+
+                await post.save();
+            }
+
+            plan.remove();
+        }
+    }
+
+    async restartPendingPlans() {
+        const pendingPlans = await Plan.find({ processed: true, done: false });
+
+        for (let plan of pendingPlans) {
+            const liker = new this._liker(plan);
+
+            await liker.start();
+        }
     }
 }
 
