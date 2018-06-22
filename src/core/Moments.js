@@ -1,4 +1,5 @@
 const moment = require('moment');
+const env = require('./Env');
 
 class Moments {
     static get currentDayStart() {
@@ -25,7 +26,7 @@ class Moments {
     }
 
     static get _dayStart() {
-        return process.env.DAY_START || 3;
+        return env.DAY_START;
     }
 }
 
