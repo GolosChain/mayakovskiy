@@ -31,6 +31,6 @@ new Main().start().then(
     () => logger.info('Main service started!'),
     error => {
         logger.error(`Main service failed - ${error}`);
-        process.exit(99);
+        process.exit(1);
     }
 );

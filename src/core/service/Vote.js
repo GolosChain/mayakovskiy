@@ -10,14 +10,6 @@ class Vote extends BasicService {
     async stop() {
         // TODO -
     }
-
-    async retry() {
-        // TODO -
-    }
-
-    async _checkForAlreadyVoted() {
-        // TODO -
-    }
 }
 
 module.exports = Vote;

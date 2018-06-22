@@ -13,14 +13,12 @@ class MongoDB extends BasicService {
     }
 
     async start(forceConnectString = null) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const connection = mongoose.connection;
 
             connection.on('error', error => {
                 logger.error(`MongoDB - ${error}`);
-            });
-            connection.once('error', error => {
-                reject(error);
+                process.exit(1);
             });
             connection.once('open', () => {
                 logger.info('MongoDB connection established.');
@@ -29,10 +27,6 @@ class MongoDB extends BasicService {
 
             mongoose.connect(forceConnectString || env.MONGO_CONNECT_STRING);
         });
-    }
-
-    async retry() {
-        // TODO -
     }
 
     async stop() {
