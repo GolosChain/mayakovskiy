@@ -1,8 +1,17 @@
-const logger = require('./Logger');
+const logger = require('../Logger');
 
-class BasicService {
+class Basic {
     constructor() {
-        this.nestedServices = [];
+        this._nestedServices = [];
+        this._done = false;
+    }
+
+    isDone() {
+        return this._done;
+    }
+
+    done() {
+        this._done = true;
     }
 
     async start() {
@@ -17,10 +26,18 @@ class BasicService {
         logger.log(`No restore logic for service ${this.constructor.name}`);
     }
 
+    async retry() {
+        throw 'No retry logic';
+    }
+
+    addNested(...services) {
+        this._nestedServices.push(...services);
+    }
+
     async startNested() {
         logger.info('Start services...');
 
-        for (let service of this.nestedServices) {
+        for (let service of this._nestedServices) {
             logger.info(`Start ${service.constructor.name}...`);
             await service.start();
             logger.info(`The ${service.constructor.name} done!`);
@@ -32,9 +49,13 @@ class BasicService {
     async stopNested() {
         logger.info('Cleanup...');
 
-        for (let service of this.nestedServices) {
+        for (let service of this._nestedServices.reverse()) {
             logger.info(`Stop ${service.constructor.name}...`);
-            await service.stop();
+
+            if (!service.isDone()) {
+                await service.stop();
+            }
+
             logger.info(`The ${service.constructor.name} done!`);
         }
 
@@ -61,4 +82,4 @@ class BasicService {
     }
 }
 
-module.exports = BasicService;
+module.exports = Basic;
