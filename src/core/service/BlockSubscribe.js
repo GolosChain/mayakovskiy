@@ -14,10 +14,6 @@ class BlockSubscribe extends BasicService {
         this._alive = false;
     }
 
-    static extractBlockNum(blockHash) {
-        return parseInt(blockHash.slice(0, 8), 16);
-    }
-
     async start(callback) {
         this._socket = new WebSocket(env.BLOCKCHAIN_NODE_ADDRESS);
 
@@ -27,10 +23,6 @@ class BlockSubscribe extends BasicService {
 
     async stop() {
         this._socket.terminate();
-    }
-
-    async blockBy(blockNum) {
-        // TODO -
     }
 
     _makeSocketHandlers() {

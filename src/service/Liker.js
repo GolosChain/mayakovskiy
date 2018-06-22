@@ -52,15 +52,20 @@ class Liker extends BasicService {
                 record.author,
                 record.permlink,
                 this._plan.weight,
-                err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                }
+                this._makeLikeHandler(resolve, reject)
             );
         });
+    }
+
+    _makeLikeHandler(resolve) {
+        return error => {
+            if (error) {
+                logger.error(`Like Machine request error - ${error}`);
+                process.exit(1);
+            } else {
+                resolve();
+            }
+        }
     }
 
     async _markPostAsLiked(record) {

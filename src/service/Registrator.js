@@ -1,6 +1,6 @@
 const golos = require('golos-js');
 const BasicService = require('../core/service/Basic');
-const BlockChainMocks = require('../core/BlockChainMocks');
+const BlockSubscribe = require('../core/service/BlockSubscribe');
 const Moments = require('../core/Moments');
 const logger = require('../core/Logger');
 const Post = require('../model/Post');
@@ -16,9 +16,11 @@ class Registrator extends BasicService {
     async start() {
         await this.restore();
 
-        BlockChainMocks.eachBlock(data => {
+        const subscribe = new BlockSubscribe();
+
+        await subscribe.start(data => {
             this._trySync(data);
-            this._blockHandler(data);
+            this._handlerBlock(data);
         });
     }
 
@@ -75,18 +77,19 @@ class Registrator extends BasicService {
 
         logger.log(`Restore missed registration for block - ${blockNum}`);
 
-        golos.api.getBlock(blockNum, (err, data) => {
+        golos.api.getBlock(blockNum, (error, data) => {
             setImmediate(this._sync.bind(this));
 
-            if (err) {
-                throw err;
+            if (error) {
+                this._handleBlockError(error);
+                return;
             }
 
-            this._blockHandler(data);
+            this._handlerBlock(data);
         });
     }
 
-    _blockHandler(data) {
+    _handlerBlock(data) {
         data.transactions.forEach(async transaction => {
             const posts = this._parsePosts(transaction);
 
@@ -187,6 +190,11 @@ class Registrator extends BasicService {
         });
 
         await model.save();
+    }
+
+    _handleBlockError(error) {
+        logger.error(`Load block error - ${error}`);
+        process.exit(1);
     }
 }
 
