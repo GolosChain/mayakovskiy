@@ -1,4 +1,5 @@
 const golos = require('golos-js');
+const env = require('../core/Env');
 const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
 const Post = require('../model/Post');
@@ -47,8 +48,8 @@ class Liker extends BasicService {
     _likePost(record) {
         return new Promise((resolve, reject) => {
             golos.broadcast.vote(
-                process.env.WIF,
-                process.env.LOGIN,
+                env.WIF,
+                env.LOGIN,
                 record.author,
                 record.permlink,
                 this._plan.weight,
