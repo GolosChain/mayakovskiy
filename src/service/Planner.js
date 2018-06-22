@@ -1,4 +1,4 @@
-const BasicService = require('../core/BasicService');
+const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
 const Moments = require('../core/Moments');
 const Post = require('../model/Post');
@@ -22,6 +22,13 @@ class Planner extends BasicService {
         this.startLoop(Moments.remainedToNextDay, Moments.oneDay);
     }
 
+    async stop() {
+        this.stopLoop();
+
+        logger.info('Stop nested Liker services');
+        await this.stopNested();
+    }
+
     async restore() {
         await this._dropCorruptedPlans();
         await this._restartPendingPlans();
@@ -39,6 +46,8 @@ class Planner extends BasicService {
 
         const plan = await this._makePlan(data);
         const liker = new this._liker(plan);
+
+        this.addNested(liker);
 
         logger.log('Making plan done, start new Liker');
 
@@ -110,6 +119,8 @@ class Planner extends BasicService {
 
         for (let plan of pendingPlans) {
             const liker = new this._liker(plan);
+
+            this.addNested(liker);
 
             logger.log(`Restart pending plan - ${plan._id}`);
 

@@ -1,5 +1,5 @@
 const golos = require('golos-js');
-const BasicService = require('../core/BasicService');
+const BasicService = require('../core/service/Basic');
 const BlockChainMocks = require('../core/BlockChainMocks');
 const Moments = require('../core/Moments');
 const logger = require('../core/Logger');
@@ -90,8 +90,8 @@ class Registrator extends BasicService {
         data.transactions.forEach(async transaction => {
             const posts = this._parsePosts(transaction);
 
-            for (let postKey in posts) {
-                await this._checkAndRegister(posts[postKey]);
+            for (let post of Object.values(posts)) {
+                await this._checkAndRegister(post);
             }
         });
     }
@@ -113,7 +113,7 @@ class Registrator extends BasicService {
             }
         });
 
-        for (let permlink in commentOptions) {
+        for (let permlink of Object.keys(commentOptions)) {
             if (posts[permlink]) {
                 posts[permlink].commentOptions = commentOptions[permlink];
             }

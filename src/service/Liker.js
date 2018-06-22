@@ -1,5 +1,5 @@
 const golos = require('golos-js');
-const BasicService = require('../core/BasicService');
+const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
 const Post = require('../model/Post');
 
@@ -8,11 +8,14 @@ class Liker extends BasicService {
         super();
 
         this._plan = plan;
-        this._done = false;
     }
 
     async start() {
         this.startLoop(0, this._plan.step);
+    }
+
+    async stop() {
+        this.stopLoop();
     }
 
     async iteration() {
@@ -21,6 +24,7 @@ class Liker extends BasicService {
         if (!record) {
             this.stopLoop();
             await this._markPlanAsDone();
+            this.done();
 
             return;
         }
@@ -69,11 +73,10 @@ class Liker extends BasicService {
         const id = this._plan._id;
 
         // Filter for really high load
-        if (this._done) {
+        if (this.isDone()) {
             return;
         }
 
-        this._done = true;
         this._plan.done = true;
 
         await this._plan.save();
