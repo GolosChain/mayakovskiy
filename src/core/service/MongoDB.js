@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const env = require('../Env');
 const logger = require('../Logger');
 const BasicService = require('../service/Basic');
+const stats = require('../Stats').client;
 
 class MongoDB extends BasicService {
     static makeModel(name, config) {
@@ -17,10 +18,12 @@ class MongoDB extends BasicService {
             const connection = mongoose.connection;
 
             connection.on('error', error => {
+                stats.increment('mongo_error');
                 logger.error(`MongoDB - ${error}`);
                 process.exit(1);
             });
             connection.once('open', () => {
+                stats.increment('mongo_connected');
                 logger.info('MongoDB connection established.');
                 resolve();
             });

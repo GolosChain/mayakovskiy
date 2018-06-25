@@ -2,6 +2,7 @@ const golos = require('golos-js');
 const env = require('../core/Env');
 const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
+const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 
 class Liker extends BasicService {
@@ -36,6 +37,8 @@ class Liker extends BasicService {
 
         await this._likePost(record);
         await this._markPostAsLiked(record);
+
+        stats.increment('make_like');
     }
 
     async _getTarget() {
@@ -47,6 +50,8 @@ class Liker extends BasicService {
 
     async _likePost(record) {
         try {
+            const timer = new Date();
+
             await golos.broadcast.voteAsync(
                 env.WIF,
                 env.LOGIN,
@@ -54,7 +59,10 @@ class Liker extends BasicService {
                 record.permlink,
                 this._plan.weight
             );
+
+            stats.timing('like_request', new Date() - timer);
         } catch (error) {
+            stats.increment('make_like_error');
             logger.error(`Like Machine request error - ${error}`);
             process.exit(1);
         }
@@ -78,6 +86,7 @@ class Liker extends BasicService {
 
         await this._plan.save();
 
+        stats.increment('plan_done');
         logger.info(`Plan ${id} is done!`);
     }
 }

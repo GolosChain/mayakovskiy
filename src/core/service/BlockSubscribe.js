@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const env = require('../Env');
 const logger = require('../Logger');
+const stats = require('../Stats').client;
 const BasicService = require('../service/Basic');
 
 // TODO remove after golos-js implement this methods
@@ -55,6 +56,7 @@ class BlockSubscribe extends BasicService {
     _startSocketWatchDog() {
         const dog = setInterval(() => {
             if (!this._alive) {
+                stats.increment('block_subscribe_timeout');
                 clearInterval(dog);
                 this._handleError('Request timeout');
             }
@@ -64,6 +66,7 @@ class BlockSubscribe extends BasicService {
     }
 
     _handleError(error) {
+        stats.increment('block_subscribe_error');
         logger.error(`BlockSubscribe websocket error - ${error}`);
         process.exit(1);
     }

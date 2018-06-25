@@ -1,6 +1,7 @@
 const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
 const Moments = require('../core/Moments');
+const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 const Plan = require('../model/Plan');
 
@@ -52,10 +53,13 @@ class Planner extends BasicService {
         logger.log('Making plan done, start new Liker');
 
         await liker.start();
+
+        stats.increment('plan_generated');
     }
 
     async _aggregateData() {
-        return (await Post.find(
+        const timer = new Date();
+        const data = (await Post.find(
             {
                 date: {
                     $lt: Moments.currentDayStart,
@@ -66,9 +70,14 @@ class Planner extends BasicService {
                 _id: true,
             }
         )).map(doc => doc._id);
+
+        stats.timing('plan_data_aggregation', new Date() - timer);
+
+        return data;
     }
 
     async _makePlan(data) {
+        const timer = new Date();
         const count = data.length;
         const step = Math.floor(Moments.oneDay / count);
         let weight = Math.floor(DAY_VOTE_WEIGHT / count);
@@ -89,6 +98,8 @@ class Planner extends BasicService {
 
         plan.processed = true;
         plan.save();
+
+        stats.timing('plan_saving_with_update_posts', new Date() - timer);
 
         return plan;
     }
@@ -112,6 +123,8 @@ class Planner extends BasicService {
 
             plan.remove();
         }
+
+        stats.increment('corrupted_plans_drop');
     }
 
     async _restartPendingPlans() {
@@ -126,6 +139,8 @@ class Planner extends BasicService {
 
             await liker.start();
         }
+
+        stats.increment('pending_plans_start');
     }
 }
 
