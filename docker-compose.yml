@@ -1,4 +1,3 @@
-# TODO - change auth
 version: '3.1'
 services:
   mongo:
