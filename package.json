@@ -1,7 +1,7 @@
 {
-  "name": "golos-voter",
+  "name": "MAYAKOVSKY",
   "version": "0.0.1",
-  "description": "Golos auto-voter",
+  "description": "MAYAKOVSKY auto-voter",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,7 +13,7 @@
     "semi": true,
     "trailingComma": "es5"
   },
-  "author": "Oleg Pavlov (Format-X22) [Golos Team]",
+  "author": "golos.io",
   "license": "GPL-3.0",
   "dependencies": {
     "colors": "^1.3.0",

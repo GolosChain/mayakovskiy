@@ -21,3 +21,7 @@
    
   - `BLOCKCHAIN_NODE_ADDRESS` - адрес блокчейн-ноды для прослушивания.
    Дефолтное значение - `wss://ws.golos.io` 
+   
+  - `METRICS_HOST` - адрес хоста для метрик StatsD. 
+  
+  - `METRICS_PORT` - адрес порта для метрик StatsD. 
