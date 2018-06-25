@@ -18,10 +18,16 @@ class Registrator extends BasicService {
 
         const subscribe = new BlockSubscribe();
 
+        this.addNested(subscribe);
+
         await subscribe.start(data => {
             this._trySync(data);
-            this._handlerBlock(data);
+            this._handleBlock(data);
         });
+    }
+
+    async stop() {
+        await this.stopNested();
     }
 
     async restore() {
@@ -77,19 +83,16 @@ class Registrator extends BasicService {
 
         logger.log(`Restore missed registration for block - ${blockNum}`);
 
-        golos.api.getBlock(blockNum, (error, data) => {
-            setImmediate(this._sync.bind(this));
-
-            if (error) {
-                this._handleBlockError(error);
-                return;
-            }
-
-            this._handlerBlock(data);
-        });
+        golos.api
+            .getBlockAsync()
+            .then(data => {
+                setImmediate(this._sync.bind(this));
+                this._handleBlock(data);
+            })
+            .catch(this._handleBlockError.bind(this));
     }
 
-    _handlerBlock(data) {
+    _handleBlock(data) {
         data.transactions.forEach(async transaction => {
             const posts = this._parsePosts(transaction);
 

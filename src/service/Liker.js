@@ -45,27 +45,18 @@ class Liker extends BasicService {
         return await Post.findOne(query, projection);
     }
 
-    _likePost(record) {
-        return new Promise((resolve, reject) => {
-            golos.broadcast.vote(
+    async _likePost(record) {
+        try {
+            await golos.broadcast.voteAsync(
                 env.WIF,
                 env.LOGIN,
                 record.author,
                 record.permlink,
-                this._plan.weight,
-                this._makeLikeHandler(resolve, reject)
+                this._plan.weight
             );
-        });
-    }
-
-    _makeLikeHandler(resolve) {
-        return error => {
-            if (error) {
-                logger.error(`Like Machine request error - ${error}`);
-                process.exit(1);
-            } else {
-                resolve();
-            }
+        } catch (error) {
+            logger.error(`Like Machine request error - ${error}`);
+            process.exit(1);
         }
     }
 

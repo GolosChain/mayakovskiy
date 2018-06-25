@@ -13,7 +13,7 @@ class MongoDB extends BasicService {
     }
 
     async start(forceConnectString = null) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             const connection = mongoose.connection;
 
             connection.on('error', error => {
