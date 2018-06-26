@@ -14,11 +14,16 @@ class Moments {
     }
 
     static get remainedToNextDay() {
+        const diff = moment()
+            .utc()
+            .add(this._dayStart * 2, 'hours');
+
         return moment()
+            .utc()
             .startOf('day')
             .hour(this._dayStart)
             .add(1, 'day')
-            .diff(moment());
+            .diff(diff);
     }
 
     static get oneDay() {

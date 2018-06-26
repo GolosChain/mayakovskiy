@@ -61,9 +61,6 @@ class Planner extends BasicService {
         const timer = new Date();
         const data = (await Post.find(
             {
-                date: {
-                    $lt: Moments.currentDayStart,
-                },
                 plan: null,
             },
             {
