@@ -193,7 +193,7 @@ class Registrator extends BasicService {
 
     async _register(post) {
         const timer = new Date();
-        const {author, permlink} = post;
+        const { author, permlink } = post;
         const blockNum = this._currentBlockNum;
         const model = new Post({ author, permlink, blockNum });
 

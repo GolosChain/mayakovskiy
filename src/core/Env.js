@@ -6,5 +6,5 @@ module.exports = {
     DAY_START: env.DAY_START || 3,
     BLOCKCHAIN_NODE_ADDRESS: env.BLOCKCHAIN_NODE_ADDRESS || 'wss://ws.golos.io',
     METRICS_HOST: env.METRICS_HOST || 'localhost',
-    METRICS_PORT: env.METRICS_PORT || 8125
+    METRICS_PORT: env.METRICS_PORT || 8125,
 };

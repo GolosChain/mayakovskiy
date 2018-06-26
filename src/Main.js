@@ -10,11 +10,7 @@ class Main extends AbstractService {
     constructor() {
         super();
 
-        this.addNested(
-            new MongoDB(),
-            new Registrator(),
-            new Planner(Liker)
-        );
+        this.addNested(new MongoDB(), new Registrator(), new Planner(Liker));
         this.stopOnExit();
     }
 

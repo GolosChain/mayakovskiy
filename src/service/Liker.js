@@ -31,7 +31,8 @@ class Liker extends BasicService {
             return;
         }
 
-        const targetMsg = `Target - ${record.author} (id: ${record.id})`;
+        const { id, author, permlink } = record;
+        const targetMsg = `Target - ${author} [${permlink}] (id: ${id})`;
 
         logger.log(`It's Like machine time! ;) ${targetMsg}`);
 
