@@ -18,7 +18,7 @@ class BlockSubscribe extends BasicService {
     async start(callback) {
         this._socket = new WebSocket(env.BLOCKCHAIN_NODE_ADDRESS);
 
-        this._makeSocketHandlers();
+        this._makeSocketHandlers(callback);
         this._startSocketWatchDog();
     }
 
@@ -26,7 +26,7 @@ class BlockSubscribe extends BasicService {
         this._socket.terminate();
     }
 
-    _makeSocketHandlers() {
+    _makeSocketHandlers(callback) {
         this._socket.on('error', this._handleError);
         this._socket.on('message', raw => {
             let response;
@@ -34,7 +34,7 @@ class BlockSubscribe extends BasicService {
             this._alive = true;
 
             try {
-                response = JSON.parse(raw.data);
+                response = JSON.parse(raw);
             } catch (error) {
                 this._handleError(error);
                 return;

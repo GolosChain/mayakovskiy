@@ -24,7 +24,7 @@ class Logger {
     }
 
     static _now() {
-        return moment().format('YYYY-MM-DD HH:mm');
+        return moment().format('YYYY-MM-DD HH:mm:ss');
     }
 }
 

@@ -63,9 +63,9 @@ class Registrator extends BasicService {
         if (previousBlockNum !== this._syncedBlockNum) {
             this._populateSyncQueue();
             this._sync();
-
-            this._syncedBlockNum = previousBlockNum;
         }
+
+        this._syncedBlockNum = this._currentBlockNum;
     }
 
     _populateSyncQueue() {
@@ -89,7 +89,7 @@ class Registrator extends BasicService {
         logger.log(`Restore missed registration for block - ${blockNum}`);
 
         golos.api
-            .getBlockAsync()
+            .getBlockAsync(blockNum)
             .then(data => {
                 stats.timing('block_restore', new Date() - timer);
                 setImmediate(this._sync.bind(this));
@@ -193,14 +193,13 @@ class Registrator extends BasicService {
 
     async _register(post) {
         const timer = new Date();
-        let model = new Post({
-            author: post.author,
-            permlink: post.permlink,
-            blockNum: this._currentBlockNum,
-        });
+        const {author, permlink} = post;
+        const blockNum = this._currentBlockNum;
+        const model = new Post({ author, permlink, blockNum });
 
         await model.save();
 
+        logger.log(`Register post: ${author} - ${permlink}`);
         stats.timing('post_registration', new Date() - timer);
     }
 
