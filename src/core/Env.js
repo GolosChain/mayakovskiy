@@ -5,8 +5,6 @@ module.exports = {
     BLOCKCHAIN_SUBSCRIBE_TIMEOUT: env.BLOCKCHAIN_SUBSCRIBE_TIMEOUT || 60000,
     DAY_START: env.DAY_START || 3,
     BLOCKCHAIN_NODE_ADDRESS: env.BLOCKCHAIN_NODE_ADDRESS || 'wss://ws.golos.io',
-    WIF: env.WIF,
-    LOGIN: env.LOGIN,
     METRICS_HOST: env.METRICS_HOST || 'localhost',
     METRICS_PORT: env.METRICS_PORT || 8125
 };

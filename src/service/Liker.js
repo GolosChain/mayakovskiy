@@ -1,5 +1,5 @@
 const golos = require('golos-js');
-const env = require('../core/Env');
+const env = require('../Env');
 const BasicService = require('../core/service/Basic');
 const logger = require('../core/Logger');
 const stats = require('../core/Stats').client;
