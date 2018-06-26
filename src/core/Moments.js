@@ -2,12 +2,13 @@ const moment = require('moment');
 const env = require('./Env');
 
 /**
- * //
+ * Утилита для типичных временных сущностей.
  */
 class Moments {
     /**
-     * //
-     * @returns {moment.Moment}
+     * Время начала текущего дня.
+     * Учитывает сдвиг из конфигурации DAY_START, смотри Readme.
+     * @returns {moment.Moment} Время как объект moment.js.
      */
     static get currentDayStart() {
         return moment()
@@ -17,16 +18,18 @@ class Moments {
     }
 
     /**
-     * //
-     * @returns {moment.Moment}
+     * Время начала предыдущего дня.
+     * Учитывает сдвиг из конфигурации DAY_START, смотри Readme.
+     * @returns {moment.Moment} Время как объект moment.js.
      */
     static get lastDayStart() {
         return this.currentDayStart.subtract(1, 'day');
     }
 
     /**
-     * //
-     * @returns {number}
+     * Время в миллисекундах, которое осталось до начала следующего дня.
+     * Учитывает сдвиг из конфигурации DAY_START, смотри Readme.
+     * @returns {number} Число в миллисекундах.
      */
     static get remainedToNextDay() {
         const diff = moment()
@@ -42,8 +45,8 @@ class Moments {
     }
 
     /**
-     * //
-     * @returns {moment.Duration}
+     * Один день в виде объекта Duration.
+     * @returns {moment.Duration} Время как объект интервала moment.js.
      */
     static get oneDay() {
         return moment.duration(1, 'day');

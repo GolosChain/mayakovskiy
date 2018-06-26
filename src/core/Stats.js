@@ -3,12 +3,15 @@ const env = require('./Env');
 const logger = require('./Logger');
 
 /**
- * //
+ * Класс-обертка для StatsD (получение статуса о работоспособности сервиса).
+ * Автоматически инициализирует сервис при попытке получить клиент для
+ * взаимодействия.
  */
 class Stats {
     /**
-     * //
-     * @returns {StatsDClient|*|Client}
+     * Получение клиента для StatsD сервера.
+     * Автоматически создает подключение в случае отсутствия.
+     * @returns {StatsDClient} Клиент.
      */
     static get client() {
         if (!this._client) {

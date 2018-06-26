@@ -1,5 +1,5 @@
 const logger = require('./core/Logger');
-const AbstractService = require('./core/service/Basic');
+const BasicService = require('./core/service/Basic');
 const Registrator = require('./service/Registrator');
 const Planner = require('./service/Planner');
 const Liker = require('./service/Liker');
@@ -7,9 +7,16 @@ const MongoDB = require('./core/service/MongoDB');
 const stats = require('./core/Stats').client;
 
 /**
- * //
+ * Основная точка входа.
+ * Является сервисом с вложенными сервисами.
+ * Запускает все остальные необходимые сервисы.
+ * При выходе по Ctrl-C или иным подобным безопасным способом
+ * пытается безболезненно остановить все вложенные сервисы.
+ *
+ * Дополнительная информация о проекте в целом, а также описание возможных
+ * переменных окружения содержится в файлах Readme и Arch.pdf.
  */
-class Main extends AbstractService {
+class Main extends BasicService {
     constructor() {
         super();
 
@@ -18,8 +25,8 @@ class Main extends AbstractService {
     }
 
     /**
-     * //
-     * @returns {Promise<void>}
+     * Запуск.
+     * @returns {Promise<void>} Промис без экстра данных.
      */
     async start() {
         await this.startNested();
@@ -27,8 +34,8 @@ class Main extends AbstractService {
     }
 
     /**
-     * //
-     * @returns {Promise<void>}
+     * Остановка с выходом с кодом 0.
+     * @returns {Promise<void>} Промис без экстра данных.
      */
     async stop() {
         await this.stopNested();

@@ -9,7 +9,13 @@ const MAGIC_SUBSCRIBE_CALL =
     '{"id":1,"jsonrpc":"2.0","method":"call","params":["database_api","set_block_applied_callback",[0]]}';
 
 /**
- * //
+ * Сервис подписки получения новых блоков.
+ * Подписывается на рассылку блоков от golos-ноды, адрес которой определяется
+ * переменной окружения. Каждый полученный блок сериализует и передает
+ * в указанный callback. Имеет встроенную систему выброса ошибки по таймауту.
+ *
+ * На данный момент подключается напрямую, в обход golos-js т.к. необходимые
+ * методы ещё не реализованны.
  */
 class BlockSubscribe extends BasicService {
     constructor() {
@@ -19,9 +25,12 @@ class BlockSubscribe extends BasicService {
     }
 
     /**
-     * //
-     * @param callback
-     * @returns {Promise<void>}
+     * Запуск, подписывается на новые блоки указанной golos-ноды
+     * и переправляет все данные в сериализованном виде в указанный
+     * callback.
+     * @param {Function} callback Функция, которая будет получать данные
+     * каждого нового блока.
+     * @returns {Promise<void>} Промис без экстра данных.
      */
     async start(callback) {
         this._socket = new WebSocket(env.BLOCKCHAIN_NODE_ADDRESS);
@@ -31,8 +40,8 @@ class BlockSubscribe extends BasicService {
     }
 
     /**
-     * //
-     * @returns {Promise<void>}
+     * Остановка, уничтожает сокет подключения.
+     * @returns {Promise<void>} Промис без экстра данных.
      */
     async stop() {
         this._socket.terminate();
