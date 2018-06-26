@@ -22,6 +22,16 @@
   - `BLOCKCHAIN_NODE_ADDRESS` - адрес блокчейн-ноды для прослушивания.
    Дефолтное значение - `wss://ws.golos.io` 
    
-  - `METRICS_HOST` - адрес хоста для метрик StatsD. 
+  - `METRICS_HOST` - адрес хоста для метрик StatsD.
+   Дефолтное значение - `localhost` 
   
-  - `METRICS_PORT` - адрес порта для метрик StatsD. 
+  - `METRICS_PORT` - адрес порта для метрик StatsD.
+   Дефолтное значение - `8125` 
+
+Установка и запуск:
+
+  - `docker build -t mayakovsky-node .`
+  
+  - `docker compose up`
+  
+Требует обязательного наличия переменных окружения LOGIN и WIF.  
