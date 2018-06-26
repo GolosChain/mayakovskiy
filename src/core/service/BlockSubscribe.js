@@ -8,6 +8,9 @@ const BasicService = require('../service/Basic');
 const MAGIC_SUBSCRIBE_CALL =
     '{"id":1,"jsonrpc":"2.0","method":"call","params":["database_api","set_block_applied_callback",[0]]}';
 
+/**
+ * //
+ */
 class BlockSubscribe extends BasicService {
     constructor() {
         super();
@@ -15,6 +18,11 @@ class BlockSubscribe extends BasicService {
         this._alive = false;
     }
 
+    /**
+     * //
+     * @param callback
+     * @returns {Promise<void>}
+     */
     async start(callback) {
         this._socket = new WebSocket(env.BLOCKCHAIN_NODE_ADDRESS);
 
@@ -22,6 +30,10 @@ class BlockSubscribe extends BasicService {
         this._startSocketWatchDog();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         this._socket.terminate();
     }

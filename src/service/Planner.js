@@ -10,6 +10,9 @@ const THE_100_PERCENT_DECIMALS = 100 * 100;
 const VOTE_BY_DAY_WITH_MAX_WEIGHT = 40;
 const DAY_VOTE_WEIGHT = THE_100_PERCENT_DECIMALS * VOTE_BY_DAY_WITH_MAX_WEIGHT;
 
+/**
+ * //
+ */
 class Planner extends BasicService {
     constructor(Liker) {
         super();
@@ -17,12 +20,20 @@ class Planner extends BasicService {
         this._liker = Liker;
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async start() {
         await this.restore();
 
         this.startLoop(Moments.remainedToNextDay, Moments.oneDay);
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         this.stopLoop();
 
@@ -30,11 +41,19 @@ class Planner extends BasicService {
         await this.stopNested();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async restore() {
         await this._dropCorruptedPlans();
         await this._restartPendingPlans();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async iteration() {
         logger.log('Make new plan...');
 

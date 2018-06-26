@@ -4,15 +4,33 @@ const logger = require('../Logger');
 const BasicService = require('../service/Basic');
 const stats = require('../Stats').client;
 
+/**
+ * //
+ */
 class MongoDB extends BasicService {
+    /**
+     * //
+     * @param name
+     * @param config
+     * @returns {Model}
+     */
     static makeModel(name, config) {
         return mongoose.model(name, new mongoose.Schema(config));
     }
 
+    /**
+     * //
+     * @returns {*}
+     */
     static get type() {
         return mongoose.Schema.Types;
     }
 
+    /**
+     * //
+     * @param forceConnectString
+     * @returns {Promise<any>}
+     */
     async start(forceConnectString = null) {
         return new Promise(resolve => {
             const connection = mongoose.connection;
@@ -32,6 +50,10 @@ class MongoDB extends BasicService {
         });
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         await mongoose.disconnect();
         logger.info('MongoDB disconnected.');

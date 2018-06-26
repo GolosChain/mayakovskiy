@@ -1,7 +1,14 @@
 const moment = require('moment');
 const env = require('./Env');
 
+/**
+ * //
+ */
 class Moments {
+    /**
+     * //
+     * @returns {moment.Moment}
+     */
     static get currentDayStart() {
         return moment()
             .utc()
@@ -9,10 +16,18 @@ class Moments {
             .hour(this._dayStart);
     }
 
+    /**
+     * //
+     * @returns {moment.Moment}
+     */
     static get lastDayStart() {
         return this.currentDayStart.subtract(1, 'day');
     }
 
+    /**
+     * //
+     * @returns {number}
+     */
     static get remainedToNextDay() {
         const diff = moment()
             .utc()
@@ -26,6 +41,10 @@ class Moments {
             .diff(diff);
     }
 
+    /**
+     * //
+     * @returns {moment.Duration}
+     */
     static get oneDay() {
         return moment.duration(1, 'day');
     }

@@ -2,7 +2,14 @@ const StatsDClient = require('node-statsd');
 const env = require('./Env');
 const logger = require('./Logger');
 
+/**
+ * //
+ */
 class Stats {
+    /**
+     * //
+     * @returns {StatsDClient|*|Client}
+     */
     static get client() {
         if (!this._client) {
             this._init();

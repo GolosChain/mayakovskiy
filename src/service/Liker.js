@@ -5,6 +5,9 @@ const logger = require('../core/Logger');
 const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 
+/**
+ * //
+ */
 class Liker extends BasicService {
     constructor(plan) {
         super();
@@ -12,14 +15,26 @@ class Liker extends BasicService {
         this._plan = plan;
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async start() {
         this.startLoop(0, this._plan.step);
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         this.stopLoop();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async iteration() {
         const record = await this._getTarget();
 

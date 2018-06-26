@@ -6,6 +6,9 @@ const logger = require('../core/Logger');
 const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 
+/**
+ * //
+ */
 class Registrator extends BasicService {
     constructor() {
         super();
@@ -14,6 +17,10 @@ class Registrator extends BasicService {
         this._syncStack = [];
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async start() {
         await this.restore();
 
@@ -27,10 +34,18 @@ class Registrator extends BasicService {
         });
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         await this.stopNested();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async restore() {
         const timer = new Date();
         const postAtLastBlock = await Post.findOne(

@@ -6,6 +6,9 @@ const Liker = require('./service/Liker');
 const MongoDB = require('./core/service/MongoDB');
 const stats = require('./core/Stats').client;
 
+/**
+ * //
+ */
 class Main extends AbstractService {
     constructor() {
         super();
@@ -14,11 +17,19 @@ class Main extends AbstractService {
         this.stopOnExit();
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async start() {
         await this.startNested();
         stats.increment('main_service_start');
     }
 
+    /**
+     * //
+     * @returns {Promise<void>}
+     */
     async stop() {
         await this.stopNested();
         stats.increment('main_service_stop');

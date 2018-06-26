@@ -1,15 +1,27 @@
 require('colors');
 const moment = require('moment');
 
+/**
+ * //
+ */
 class Logger {
+    /**
+     * //
+     */
     static log() {
         this._log('[log]', arguments, 'grey');
     }
 
+    /**
+     * //
+     */
     static info() {
         this._log('[info]', arguments, 'blue');
     }
 
+    /**
+     * //
+     */
     static error() {
         this._log('[error]', arguments, 'red');
     }
