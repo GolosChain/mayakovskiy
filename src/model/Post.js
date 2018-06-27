@@ -21,7 +21,7 @@ module.exports = MongoDB.makeModel('Post', {
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     },
     blockNum: {
         type: Number,
