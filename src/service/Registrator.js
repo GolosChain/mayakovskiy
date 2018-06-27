@@ -1,10 +1,26 @@
 const golos = require('golos-js');
-const BasicService = require('../core/BasicService');
-const BlockChainMocks = require('../core/BlockChainMocks');
+const BasicService = require('../core/service/Basic');
+const BlockSubscribe = require('../core/service/BlockSubscribe');
 const Moments = require('../core/Moments');
 const logger = require('../core/Logger');
+const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 
+/**
+ * Сервис регистрации новых постов со встроенной фильтрацией.
+ * Содержит систему самовосстановления после сбоев.
+ * Абстракная схема принципа работы представлена в файле Arch.pdf.
+ *
+ * Сервис работает постоянно, на каждый новый блок собирая данные
+ * по опубликованным статьям.
+ * Данные проверяются на факт постинга с официального сайта или приложения
+ * golos.io, а также на тот факт что пост от конкретного пользователя был
+ * первым за сутки, не подходящие данные не сохраняются.
+ * Дополнительно предусмотрена установка валидаторов на проверку попыток
+ * совершения мошеннических действий. Валидаторы фильтруют неподходящие данные,
+ * не пуская их в список для лайкинга.
+ * Валидаторы могут быть удаленными сервисами.
+ */
 class Registrator extends BasicService {
     constructor() {
         super();
@@ -13,16 +29,41 @@ class Registrator extends BasicService {
         this._syncStack = [];
     }
 
+    /**
+     * Запуск с автоматической проверкой на факт сбоев.
+     * Все пропущенные за время сбоя блоки будут проверенны.
+     * @returns {Promise<void>} Промис без экстра данных.
+     */
     async start() {
         await this.restore();
 
-        BlockChainMocks.eachBlock(data => {
+        const subscribe = new BlockSubscribe();
+
+        this.addNested(subscribe);
+
+        await subscribe.start(data => {
             this._trySync(data);
-            this._blockHandler(data);
+            this._handleBlock(data);
         });
     }
 
+    /**
+     * Остановка сервиса с остановкой вложенных сервисов.
+     * @returns {Promise<void>} Промис без экстра данных.
+     */
+    async stop() {
+        await this.stopNested();
+    }
+
+    /**
+     * Самовосстановление сервиса.
+     * Ручной запуск в обычном кейсе не предполагается,
+     * т.к. автоматически вызывается при запуске сервиса.
+     * Все пропущенные за время сбоя блоки будут проверенны.
+     * @returns {Promise<void>} Промис без экстра данных.
+     */
     async restore() {
+        const timer = new Date();
         const postAtLastBlock = await Post.findOne(
             {},
             { blockNum: true, _id: false },
@@ -32,6 +73,8 @@ class Registrator extends BasicService {
         if (postAtLastBlock) {
             this._syncedBlockNum = postAtLastBlock.blockNum;
         }
+
+        stats.timing('last_block_num_search', new Date() - timer);
     }
 
     _trySync(data) {
@@ -51,9 +94,9 @@ class Registrator extends BasicService {
         if (previousBlockNum !== this._syncedBlockNum) {
             this._populateSyncQueue();
             this._sync();
-
-            this._syncedBlockNum = previousBlockNum;
         }
+
+        this._syncedBlockNum = this._currentBlockNum;
     }
 
     _populateSyncQueue() {
@@ -72,26 +115,26 @@ class Registrator extends BasicService {
 
         // async lightweight step-by-step data sync strategy
         const blockNum = this._syncStack.pop();
+        const timer = new Date();
 
         logger.log(`Restore missed registration for block - ${blockNum}`);
 
-        golos.api.getBlock(blockNum, (err, data) => {
-            setImmediate(this._sync.bind(this));
-
-            if (err) {
-                throw err;
-            }
-
-            this._blockHandler(data);
-        });
+        golos.api
+            .getBlockAsync(blockNum)
+            .then(data => {
+                stats.timing('block_restore', new Date() - timer);
+                setImmediate(this._sync.bind(this));
+                this._handleBlock(data);
+            })
+            .catch(this._handleBlockError.bind(this));
     }
 
-    _blockHandler(data) {
+    _handleBlock(data) {
         data.transactions.forEach(async transaction => {
             const posts = this._parsePosts(transaction);
 
-            for (let postKey in posts) {
-                await this._checkAndRegister(posts[postKey]);
+            for (let post of Object.values(posts)) {
+                await this._checkAndRegister(post);
             }
         });
     }
@@ -113,7 +156,7 @@ class Registrator extends BasicService {
             }
         });
 
-        for (let permlink in commentOptions) {
+        for (let permlink of Object.keys(commentOptions)) {
             if (posts[permlink]) {
                 posts[permlink].commentOptions = commentOptions[permlink];
             }
@@ -180,13 +223,21 @@ class Registrator extends BasicService {
     }
 
     async _register(post) {
-        let model = new Post({
-            author: post.author,
-            permlink: post.permlink,
-            blockNum: this._currentBlockNum,
-        });
+        const timer = new Date();
+        const { author, permlink } = post;
+        const blockNum = this._currentBlockNum;
+        const model = new Post({ author, permlink, blockNum });
 
         await model.save();
+
+        logger.log(`Register post: ${author} - ${permlink}`);
+        stats.timing('post_registration', new Date() - timer);
+    }
+
+    _handleBlockError(error) {
+        stats.increment('block_registration_error');
+        logger.error(`Load block error - ${error}`);
+        process.exit(1);
     }
 }
 

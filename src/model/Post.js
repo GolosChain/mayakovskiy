@@ -1,4 +1,4 @@
-const MongoDB = require('../core/MongoDB');
+const MongoDB = require('../core/service/MongoDB');
 
 module.exports = MongoDB.makeModel('Post', {
     author: {
@@ -21,7 +21,7 @@ module.exports = MongoDB.makeModel('Post', {
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     },
     blockNum: {
         type: Number,

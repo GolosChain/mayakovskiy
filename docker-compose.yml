@@ -1,5 +1,4 @@
-# TODO - change auth
-version: '3.1'
+version: '3.6'
 services:
   mongo:
     container_name: mongo
@@ -9,3 +8,27 @@ services:
       - ./db:/data/db
     ports:
       - 27017:27017
+    networks:
+      - services-tier
+  node:
+    container_name: node
+    restart: always
+    depends_on:
+      - mongo
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - services-tier
+    environment:
+      - LOGIN
+      - WIF
+      - DAY_START
+      - MONGO_CONNECT_STRING
+      - BLOCKCHAIN_SUBSCRIBE_TIMEOUT
+      - BLOCKCHAIN_NODE_ADDRESS
+      - METRICS_HOST
+      - METRICS_PORT
+
+networks:
+  services-tier:

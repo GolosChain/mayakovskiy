@@ -1,9 +1,9 @@
-const MongoDB = require('../core/MongoDB');
+const MongoDB = require('../core/service/MongoDB');
 
 module.exports = MongoDB.makeModel('Plan', {
     date: {
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     },
     processed: {
         type: Boolean,
