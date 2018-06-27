@@ -12,8 +12,12 @@ services:
       - services-tier
   node:
     container_name: node
-    image: mayakovsky-node
     restart: always
+    depends_on:
+      - mongo
+    build:
+      context: .
+      dockerfile: Dockerfile
     networks:
       - services-tier
     environment:
