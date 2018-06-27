@@ -29,8 +29,6 @@
    Дефолтное значение - `8125` 
 
 Установка и запуск:
-
-  - `docker build -t mayakovsky-node .`
   
   - `docker compose up`
   
