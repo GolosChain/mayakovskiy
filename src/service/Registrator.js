@@ -5,6 +5,7 @@ const Moments = require('../core/Moments');
 const logger = require('../core/Logger');
 const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
+const env = require('../Env');
 
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
@@ -186,6 +187,10 @@ class Registrator extends BasicService {
             return false;
         }
 
+        if (!(await this._validatePower(post))) {
+            return false;
+        }
+
         return true;
     }
 
@@ -215,6 +220,22 @@ class Registrator extends BasicService {
         const count = await Post.find(request).count();
 
         return count === 0;
+    }
+
+    async _validatePower(post) {
+        if (env.MIN_GOLOS_POWER === 0) {
+            return true;
+        }
+
+        const [account] = await golos.api.getAccountsAsync([post.author]);
+        const globals = await golos.api.getDynamicGlobalPropertiesAsync();
+        const power = golos.formatter.vestToGolos(
+            account.vesting_shares,
+            globals.total_vesting_shares,
+            globals.total_vesting_fund_steem
+        );
+
+        return power >= env.MIN_GOLOS_POWER;
     }
 
     async _remoteValidation(post) {
