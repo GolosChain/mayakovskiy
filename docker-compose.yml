@@ -21,6 +21,7 @@ services:
     networks:
       - services-tier
     environment:
+      - MIN_GOLOS_POWER
       - LOGIN
       - WIF
       - DAY_START
