@@ -5,6 +5,9 @@ const logger = require('../core/Logger');
 const stats = require('../core/Stats').client;
 const Post = require('../model/Post');
 
+// TODO Remove after Core team implement error codes
+const ALREADY_VOTED_RE = /You have already voted in a similar way\./;
+
 /**
  * Сервис непосредственного поощрения пользователей лайками.
  * Не содержит своей системы восстановления после сбоев т.к.
@@ -96,8 +99,17 @@ class Liker extends BasicService {
             stats.timing('like_request', new Date() - timer);
         } catch (error) {
             stats.increment('make_like_error');
-            logger.error(`Like Machine request error - ${error}`);
-            process.exit(1);
+
+            switch (true) {
+                case ALREADY_VOTED_RE.test(error.message):
+                    logger.error(
+                        `Like Machine already vote - ${record.permlink}`
+                    );
+                    break;
+                default:
+                    logger.error(`Like Machine request error - ${error}`);
+                    process.exit(1);
+            }
         }
     }
 
