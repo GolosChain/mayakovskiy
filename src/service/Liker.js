@@ -102,9 +102,7 @@ class Liker extends BasicService {
 
             switch (true) {
                 case ALREADY_VOTED_RE.test(error.message):
-                    logger.error(
-                        `Like Machine already vote - ${record.permlink}`
-                    );
+                    logger.error(`Like Machine already vote - ${record.permlink}`);
                     break;
                 default:
                     logger.error(`Like Machine request error - ${error}`);

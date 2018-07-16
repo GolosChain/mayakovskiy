@@ -85,10 +85,7 @@ class Registrator extends BasicService {
         this._currentBlockNum = previousBlockNum + 1;
 
         if (!this._syncedBlockNum) {
-            logger.log(
-                'Empty Post collection,',
-                `then start sync from block ${previousBlockNum}`
-            );
+            logger.log('Empty Post collection,', `then start sync from block ${previousBlockNum}`);
             this._syncedBlockNum = previousBlockNum;
         }
 

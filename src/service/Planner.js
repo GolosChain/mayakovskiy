@@ -146,10 +146,7 @@ class Planner extends BasicService {
     }
 
     async _dropCorruptedPlans() {
-        const corruptedPlans = await Plan.find(
-            { processed: false },
-            { _id: true }
-        );
+        const corruptedPlans = await Plan.find({ processed: false }, { _id: true });
 
         for (let plan of corruptedPlans) {
             const posts = await Post.find({ plan: plan._id });
