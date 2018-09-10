@@ -1,6 +1,6 @@
 {
     "name": "MAYAKOVSKY",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "MAYAKOVSKY auto-voter",
     "main": "index.js",
     "scripts": {
