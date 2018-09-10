@@ -100,14 +100,31 @@ class Liker extends BasicService {
         } catch (error) {
             stats.increment('make_like_error');
 
-            switch (true) {
-                case ALREADY_VOTED_RE.test(error.message):
-                    logger.error(`Like Machine already vote - ${record.permlink}`);
-                    break;
-                default:
-                    logger.error(`Like Machine request error - ${error}`);
-                    process.exit(1);
-            }
+            this._handleLikeError(record, error);
+        }
+    }
+
+    _handleLikeError(record, error) {
+        let payloadErrorCode = null;
+
+        try {
+            payloadErrorCode = error.payload.error.data.code;
+        } catch (error) {
+            // do nothing
+        }
+
+        switch (true) {
+            case ALREADY_VOTED_RE.test(error.message):
+                logger.error(`Like Machine - post already voted - ${record.permlink}`);
+                break;
+
+            case payloadErrorCode === 3010000:
+                logger.error(`Like Machine - post already deleted - ${record.permlink}`);
+                break;
+
+            default:
+                logger.error(`Like Machine - request error - ${error}`);
+                process.exit(1);
         }
     }
 
