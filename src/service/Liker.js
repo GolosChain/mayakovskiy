@@ -89,8 +89,8 @@ class Liker extends BasicService {
             const timer = new Date();
 
             await golos.broadcast.voteAsync(
-                env.WIF,
-                env.LOGIN,
+                env.GLS_WIF,
+                env.GLS_LOGIN,
                 record.author,
                 record.permlink,
                 this._plan.weight
@@ -123,7 +123,7 @@ class Liker extends BasicService {
                 break;
 
             default:
-                logger.error(`Like Machine - request error - ${error}`);
+                logger.error(`Like Machine - request error - ${error.stack}`);
                 process.exit(1);
         }
     }

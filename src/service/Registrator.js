@@ -176,7 +176,13 @@ class Registrator extends BasicService {
     }
 
     async _basicValidation(post) {
-        if (!this._validateBeneficiaries(post)) {
+        const metadata = this._extractMetadata(post);
+
+        if (!this._validateTags(metadata)) {
+            return false;
+        }
+
+        if (!this._validateAppName(metadata)) {
             return false;
         }
 
@@ -191,24 +197,42 @@ class Registrator extends BasicService {
         return true;
     }
 
-    _validateBeneficiaries(post) {
-        let valid = false;
+    _extractMetadata(post) {
+        let metadata;
 
-        if (!post.commentOptions) {
-            return valid;
+        try {
+            metadata = JSON.parse(post.json_metadata);
+
+            if (!metadata || Array.isArray(metadata)) {
+                metadata = {};
+            }
+        } catch (error) {
+            metadata = {};
         }
 
-        const extensions = post.commentOptions.extensions;
+        return metadata;
+    }
 
-        extensions.forEach(extension => {
-            extension[1].beneficiaries.forEach(target => {
-                if (target.account === 'golosio' && target.weight === 1000) {
-                    valid = true;
-                }
-            });
-        });
+    _validateTags(metadata) {
+        if (!env.GLS_PROHIBITED_TAGS) {
+            return;
+        }
 
-        return valid;
+        for (const tag of env.GLS_PROHIBITED_TAGS) {
+            if (metadata.tags.includes(tag)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    _validateAppName(metadata) {
+        if (!env.GLS_GOLOS_APP_NAME) {
+            return true;
+        }
+
+        return metadata.app === env.GLS_GOLOS_APP_NAME;
     }
 
     async _validatePostCount(post) {
@@ -220,7 +244,7 @@ class Registrator extends BasicService {
     }
 
     async _validatePower(post) {
-        if (env.MIN_GOLOS_POWER === 0) {
+        if (env.GLS_MIN_GOLOS_POWER === 0) {
             return true;
         }
 
@@ -232,7 +256,7 @@ class Registrator extends BasicService {
             globals.total_vesting_fund_steem
         );
 
-        return power >= env.MIN_GOLOS_POWER;
+        return power >= env.GLS_MIN_GOLOS_POWER;
     }
 
     async _remoteValidation(post) {

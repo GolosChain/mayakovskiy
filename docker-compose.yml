@@ -22,9 +22,11 @@ services:
     networks:
       - services-tier
     environment:
-      - MIN_GOLOS_POWER
-      - LOGIN
-      - WIF
+      - GLS_MIN_GOLOS_POWER
+      - GLS_LOGIN
+      - GLS_WIF
+      - GLS_PROHIBITED_TAGS
+      - GLS_APP_NAME
       - DAY_START
       - MONGO_CONNECT_STRING
       - BLOCKCHAIN_SUBSCRIBE_TIMEOUT
