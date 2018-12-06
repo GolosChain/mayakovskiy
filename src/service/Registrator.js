@@ -219,7 +219,7 @@ class Registrator extends BasicService {
         }
 
         for (const tag of env.GLS_PROHIBITED_TAGS) {
-            if (metadata.tags.includes(tag)) {
+            if (Array.isArray(metadata.tags) && metadata.tags.includes(tag)) {
                 return false;
             }
         }
