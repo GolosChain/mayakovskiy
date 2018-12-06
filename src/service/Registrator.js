@@ -203,7 +203,7 @@ class Registrator extends BasicService {
         try {
             metadata = JSON.parse(post.json_metadata);
 
-            if (!metadata || Array.isArray(metadata)) {
+            if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
                 metadata = {};
             }
         } catch (error) {
