@@ -1,11 +1,12 @@
 const golos = require('golos-js');
-const BasicService = require('../core/service/Basic');
-const BlockSubscribe = require('../core/service/BlockSubscribe');
-const Moments = require('../core/Moments');
-const logger = require('../core/Logger');
-const stats = require('../core/Stats').client;
-const Post = require('../model/Post');
-const env = require('../Env');
+const core = require('gls-core-service');
+const stats = core.utils.statsClient;
+const Logger = core.utils.Logger;
+const BasicService = core.services.Basic;
+const BlockSubscribe = core.services.BlockSubscribe;
+const Moments = core.utils.Moments;
+const Post = require('../models/Post');
+const env = require('../data/env');
 
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
@@ -64,25 +65,29 @@ class Registrator extends BasicService {
      * @returns {Promise<void>} Промис без экстра данных.
      */
     async restore() {
-        const timer = new Date();
-        const postAtLastBlock = await Post.findOne(
-            {},
-            {
-                blockNum: true,
-                _id: false,
-            },
-            {
-                sort: {
-                    blockNum: -1,
+        try {
+            const timer = new Date();
+            const postAtLastBlock = await Post.findOne(
+                {},
+                {
+                    blockNum: true,
+                    _id: false,
                 },
+                {
+                    sort: {
+                        blockNum: -1,
+                    },
+                }
+            );
+
+            if (postAtLastBlock) {
+                this._syncedBlockNum = postAtLastBlock.blockNum;
             }
-        );
 
-        if (postAtLastBlock) {
-            this._syncedBlockNum = postAtLastBlock.blockNum;
+            stats.timing('last_block_num_search', new Date() - timer);
+        } catch (e) {
+            console.error(e);
         }
-
-        stats.timing('last_block_num_search', new Date() - timer);
     }
 
     _trySync(data) {
@@ -92,7 +97,7 @@ class Registrator extends BasicService {
         this._currentBlockNum = previousBlockNum + 1;
 
         if (!this._syncedBlockNum) {
-            logger.log('Empty Post collection,', `then start sync from block ${previousBlockNum}`);
+            Logger.log('Empty Post collection,', `then start sync from block ${previousBlockNum}`);
             this._syncedBlockNum = previousBlockNum;
         }
 
@@ -122,7 +127,7 @@ class Registrator extends BasicService {
         const blockNum = this._syncStack.pop();
         const timer = new Date();
 
-        logger.log(`Restore missed registration for block - ${blockNum}`);
+        Logger.log(`Restore missed registration for block - ${blockNum}`);
 
         golos.api
             .getBlockAsync(blockNum)
@@ -296,13 +301,13 @@ class Registrator extends BasicService {
 
         await model.save();
 
-        logger.log(`Register post: ${author} - ${permlink}`);
+        Logger.log(`Register post: ${author} - ${permlink}`);
         stats.timing('post_registration', new Date() - timer);
     }
 
     _handleBlockError(error) {
         stats.increment('block_registration_error');
-        logger.error(`Load block error - ${error}`);
+        Logger.error(`Load block error - ${error}`);
         process.exit(1);
     }
 }

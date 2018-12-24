@@ -1,4 +1,5 @@
-const MongoDB = require('../core/service/MongoDB');
+const core = require('gls-core-service');
+const MongoDB = core.services.MongoDB;
 
 module.exports = MongoDB.makeModel('Post', {
     author: {
@@ -17,7 +18,9 @@ module.exports = MongoDB.makeModel('Post', {
     plan: {
         type: MongoDB.type.ObjectId,
         default: null,
-        index: { sparse: true },
+        index: {
+            sparse: true,
+        },
     },
     date: {
         type: Date,
