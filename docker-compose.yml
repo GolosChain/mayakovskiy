@@ -1,41 +1,31 @@
 version: '3.6'
 services:
-  mongo:
-    container_name: mongo
-    image: mongo
-    restart: always
-    volumes:
-      - mongodb_vol:/data/db
-    ports:
-      - 127.0.0.1:27017:27017
-    networks:
-      - services-tier
+    mongo:
+        container_name: mongo
+        image: mongo
+        restart: always
+        volumes:
+            - mongodb_vol:/data/db
+        ports:
+            - 127.0.0.1:27017:27017
+        networks:
+            - services-tier
 
-  node:
-    container_name: node
-    restart: always
-    depends_on:
-      - mongo
-    build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      - services-tier
-    environment:
-      - GLS_MIN_GOLOS_POWER
-      - GLS_LOGIN
-      - GLS_WIF
-      - GLS_PROHIBITED_TAGS
-      - GLS_APP_NAME
-      - DAY_START
-      - MONGO_CONNECT_STRING
-      - BLOCKCHAIN_SUBSCRIBE_TIMEOUT
-      - BLOCKCHAIN_NODE_ADDRESS
-      - METRICS_HOST
-      - METRICS_PORT
+    node:
+        container_name: node
+        restart: always
+        depends_on:
+            - mongo
+        build:
+            context: .
+            dockerfile: Dockerfile
+        networks:
+            - services-tier
+        env_file:
+            - .env
 
 volumes:
-  mongodb_vol:           
+    mongodb_vol:
 
 networks:
-  services-tier:
+    services-tier:
