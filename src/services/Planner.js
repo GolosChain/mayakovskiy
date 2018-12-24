@@ -1,9 +1,10 @@
-const BasicService = require('../core/service/Basic');
-const logger = require('../core/Logger');
-const Moments = require('../core/Moments');
-const stats = require('../core/Stats').client;
-const Post = require('../model/Post');
-const Plan = require('../model/Plan');
+const core = require('gls-core-service');
+const stats = core.utils.statsClient;
+const Logger = core.utils.Logger;
+const BasicService = core.services.Basic;
+const Moments = core.utils.Moments;
+const Post = require('../models/Post');
+const Plan = require('../models/Plan');
 
 // BlockChain constants
 const THE_100_PERCENT_DECIMALS = 100 * 100;
@@ -55,7 +56,7 @@ class Planner extends BasicService {
     async stop() {
         this.stopLoop();
 
-        logger.info('Stop nested Liker services');
+        Logger.info('Stop nested Liker services');
         await this.stopNested();
     }
 
@@ -80,12 +81,12 @@ class Planner extends BasicService {
      * @returns {Promise<void>} Промис без экстра данных.
      */
     async iteration() {
-        logger.log('Make new plan...');
+        Logger.log('Make new plan...');
 
         const data = await this._aggregateData();
 
         if (data.length === 0) {
-            logger.error('No posts from golos.io?!');
+            Logger.error('No posts from golos.io?!');
             return;
         }
 
@@ -94,7 +95,7 @@ class Planner extends BasicService {
 
         this.addNested(liker);
 
-        logger.log('Making plan done, start new Liker');
+        Logger.log('Making plan done, start new Liker');
 
         await liker.start();
 
@@ -128,12 +129,19 @@ class Planner extends BasicService {
             weight = THE_100_PERCENT_DECIMALS;
         }
 
-        const plan = new Plan({ step, weight });
+        const plan = new Plan({
+            step,
+            weight,
+        });
 
         await plan.save();
 
         for (let id of data) {
-            const update = { $set: { plan: plan._id } };
+            const update = {
+                $set: {
+                    plan: plan._id,
+                },
+            };
             await Post.findByIdAndUpdate(id, update);
         }
 
@@ -146,10 +154,19 @@ class Planner extends BasicService {
     }
 
     async _dropCorruptedPlans() {
-        const corruptedPlans = await Plan.find({ processed: false }, { _id: true });
+        const corruptedPlans = await Plan.find(
+            {
+                processed: false,
+            },
+            {
+                _id: true,
+            }
+        );
 
         for (let plan of corruptedPlans) {
-            const posts = await Post.find({ plan: plan._id });
+            const posts = await Post.find({
+                plan: plan._id,
+            });
 
             for (let post of posts) {
                 post.plan = null;
@@ -157,7 +174,7 @@ class Planner extends BasicService {
                 await post.save();
             }
 
-            logger.log(`Drop corrupted plan - ${plan._id}`);
+            Logger.log(`Drop corrupted plan - ${plan._id}`);
 
             plan.remove();
         }
@@ -166,14 +183,17 @@ class Planner extends BasicService {
     }
 
     async _restartPendingPlans() {
-        const pendingPlans = await Plan.find({ processed: true, done: false });
+        const pendingPlans = await Plan.find({
+            processed: true,
+            done: false,
+        });
 
         for (let plan of pendingPlans) {
             const liker = new this._liker(plan);
 
             this.addNested(liker);
 
-            logger.log(`Restart pending plan - ${plan._id}`);
+            Logger.log(`Restart pending plan - ${plan._id}`);
 
             await liker.start();
         }

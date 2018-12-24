@@ -1,11 +1,11 @@
-const logger = require('./core/Logger');
-const BasicService = require('./core/service/Basic');
-const Registrator = require('./service/Registrator');
-const Planner = require('./service/Planner');
-const Liker = require('./service/Liker');
-const MongoDB = require('./core/service/MongoDB');
-const stats = require('./core/Stats').client;
-const env = require('./Env');
+const core = require('gls-core-service');
+const stats = core.utils.statsClient;
+const BasicMain = core.services.BasicMain;
+const MongoDB = core.services.MongoDB;
+const Registrator = require('./services/Registrator');
+const Planner = require('./services/Planner');
+const Liker = require('./services/Liker');
+const env = require('./data/env');
 
 /**
  * Основная точка входа.
@@ -17,32 +17,12 @@ const env = require('./Env');
  * Дополнительная информация о проекте в целом, а также описание возможных
  * переменных окружения содержится в файлах Readme и Arch.pdf.
  */
-class Main extends BasicService {
+class Main extends BasicMain {
     constructor() {
-        super();
+        super(stats, env);
 
         this.addNested(new MongoDB(), new Registrator());
         this._choosePlannerMode();
-        this.stopOnExit();
-    }
-
-    /**
-     * Запуск.
-     * @returns {Promise<void>} Промис без экстра данных.
-     */
-    async start() {
-        await this.startNested();
-        stats.increment('main_service_start');
-    }
-
-    /**
-     * Остановка с выходом с кодом 0.
-     * @returns {Promise<void>} Промис без экстра данных.
-     */
-    async stop() {
-        await this.stopNested();
-        stats.increment('main_service_stop');
-        process.exit(0);
     }
 
     _choosePlannerMode() {
@@ -59,12 +39,4 @@ class Main extends BasicService {
     }
 }
 
-new Main().start().then(
-    () => {
-        logger.info('Main service started!');
-    },
-    error => {
-        logger.error(`Main service failed - ${error}`);
-        process.exit(1);
-    }
-);
+module.exports = Main;

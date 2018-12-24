@@ -1,9 +1,10 @@
 const golos = require('golos-js');
-const env = require('../Env');
-const BasicService = require('../core/service/Basic');
-const logger = require('../core/Logger');
-const stats = require('../core/Stats').client;
-const Post = require('../model/Post');
+const env = require('../data/env');
+const core = require('gls-core-service');
+const stats = core.utils.statsClient;
+const Logger = core.utils.Logger;
+const BasicService = core.services.Basic;
+const Post = require('../models/Post');
 
 // TODO Remove after Core team implement error codes
 const ALREADY_VOTED_RE = /You have already voted in a similar way\./;
@@ -69,7 +70,7 @@ class Liker extends BasicService {
         const { id, author, permlink } = record;
         const targetMsg = `Target - ${author} [${permlink}] (id: ${id})`;
 
-        logger.log(`It's Like machine time! ;) ${targetMsg}`);
+        Logger.log(`It's Like machine time! ;) ${targetMsg}`);
 
         await this._likePost(record);
         await this._markPostAsLiked(record);
@@ -78,8 +79,14 @@ class Liker extends BasicService {
     }
 
     async _getTarget() {
-        const query = { plan: this._plan._id, processed: false };
-        const projection = { author: true, permlink: true };
+        const query = {
+            plan: this._plan._id,
+            processed: false,
+        };
+        const projection = {
+            author: true,
+            permlink: true,
+        };
 
         return await Post.findOne(query, projection);
     }
@@ -115,15 +122,15 @@ class Liker extends BasicService {
 
         switch (true) {
             case ALREADY_VOTED_RE.test(error.message):
-                logger.error(`Like Machine - post already voted - ${record.permlink}`);
+                Logger.error(`Like Machine - post already voted - ${record.permlink}`);
                 break;
 
             case payloadErrorCode === 3010000:
-                logger.error(`Like Machine - post already deleted - ${record.permlink}`);
+                Logger.error(`Like Machine - post already deleted - ${record.permlink}`);
                 break;
 
             default:
-                logger.error(`Like Machine - request error - ${error.stack}`);
+                Logger.error(`Like Machine - request error - ${error.stack}`);
                 process.exit(1);
         }
     }
@@ -147,7 +154,7 @@ class Liker extends BasicService {
         await this._plan.save();
 
         stats.increment('plan_done');
-        logger.info(`Plan ${id} is done!`);
+        Logger.info(`Plan ${id} is done!`);
     }
 }
 
