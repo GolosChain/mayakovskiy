@@ -67,8 +67,15 @@ class Registrator extends BasicService {
         const timer = new Date();
         const postAtLastBlock = await Post.findOne(
             {},
-            { blockNum: true, _id: false },
-            { sort: { blockNum: -1 } }
+            {
+                blockNum: true,
+                _id: false,
+            },
+            {
+                sort: {
+                    blockNum: -1,
+                },
+            }
         );
 
         if (postAtLastBlock) {
@@ -194,6 +201,10 @@ class Registrator extends BasicService {
             return false;
         }
 
+        if (!this._validatePostLength(post)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -211,6 +222,10 @@ class Registrator extends BasicService {
         }
 
         return metadata;
+    }
+
+    _validatePostLength(post) {
+        return post.body.length >= env.GLS_MIN_POST_LENGTH;
     }
 
     _validateTags(metadata) {
@@ -237,7 +252,12 @@ class Registrator extends BasicService {
 
     async _validatePostCount(post) {
         const dayStart = Moments.currentDayStart;
-        const request = { author: post.author, date: { $gt: dayStart } };
+        const request = {
+            author: post.author,
+            date: {
+                $gt: dayStart,
+            },
+        };
         const count = await Post.find(request).count();
 
         return count === 0;
@@ -268,7 +288,11 @@ class Registrator extends BasicService {
         const timer = new Date();
         const { author, permlink } = post;
         const blockNum = this._currentBlockNum;
-        const model = new Post({ author, permlink, blockNum });
+        const model = new Post({
+            author,
+            permlink,
+            blockNum,
+        });
 
         await model.save();
 

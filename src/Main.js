@@ -5,6 +5,7 @@ const Planner = require('./service/Planner');
 const Liker = require('./service/Liker');
 const MongoDB = require('./core/service/MongoDB');
 const stats = require('./core/Stats').client;
+const env = require('./Env');
 
 /**
  * Основная точка входа.
@@ -20,7 +21,8 @@ class Main extends BasicService {
     constructor() {
         super();
 
-        this.addNested(new MongoDB(), new Registrator(), new Planner(Liker));
+        this.addNested(new MongoDB(), new Registrator());
+        this._choosePlannerMode();
         this.stopOnExit();
     }
 
@@ -41,6 +43,19 @@ class Main extends BasicService {
         await this.stopNested();
         stats.increment('main_service_stop');
         process.exit(0);
+    }
+
+    _choosePlannerMode() {
+        switch (env.GLS_PLANNER_MODE) {
+            case 'auto':
+                this.addNested(new Planner(Liker));
+                break;
+            case 'manual':
+                // TODO: -
+                break;
+            default:
+                throw new Error('GLS_PLANNER_MODE is not valid or undefined');
+        }
     }
 }
 
