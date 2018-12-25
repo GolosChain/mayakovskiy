@@ -27,21 +27,32 @@ class Main extends BasicMain {
         this._choosePlannerMode();
     }
 
+    _getAuthorization() {
+        const admin = env.GLS_ADMIN_USERNAME;
+        if (!admin) {
+            throw new Error('GLS_ADMIN_USERNAME is not set');
+        }
+        return admin;
+    }
+
     _choosePlannerMode() {
         switch (env.GLS_PLANNER_MODE) {
             case 'auto':
                 this.addNested(new Planner(Liker));
                 break;
             case 'manual':
+                const adminUsername = this._getAuthorization();
                 this.addNested(
                     new Connector({
                         ManualPlanner: new ManualPlanner(Liker),
+                        adminUsername,
                     })
                 );
                 break;
             default:
                 throw new Error('GLS_PLANNER_MODE is not valid or undefined');
         }
+        this._mode = env.GLS_PLANNER_MODE;
     }
 }
 

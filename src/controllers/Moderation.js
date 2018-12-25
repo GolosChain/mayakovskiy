@@ -25,8 +25,8 @@ class Moderation extends BasicController {
                 },
             };
             approvalRequests.push(Post.findByIdAndUpdate(id, update));
-        };
-        
+        }
+
         return await Promise.all(approvalRequests);
     }
 }
