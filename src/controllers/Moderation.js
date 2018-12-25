@@ -1,7 +1,6 @@
 const core = require('gls-core-service');
 const BasicController = core.controllers.Basic;
 const Post = require('../models/Post');
-// const Moments = core.utils.Moments.oneDay
 class Moderation extends BasicController {
     async listPosts() {
         return await Post.find({
@@ -18,8 +17,7 @@ class Moderation extends BasicController {
 
     async _markPostsApproval(postIds, approved = false) {
         const approvalRequests = [];
-        // TODO: refactor to for .. of
-        postIds.forEach(id => {
+        for (id of postIds) {
             const update = {
                 $set: {
                     processed: true,
@@ -27,9 +25,8 @@ class Moderation extends BasicController {
                 },
             };
             approvalRequests.push(Post.findByIdAndUpdate(id, update));
-        });
-
-        // TODO: think of more optimal way
+        };
+        
         return await Promise.all(approvalRequests);
     }
 }
