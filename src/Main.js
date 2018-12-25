@@ -7,7 +7,7 @@ const Planner = require('./services/Planner');
 const ManualPlanner = require('./services/ManualPlanner');
 const Liker = require('./services/Liker');
 const Connector = require('./services/Connector');
-const env = require('./data/env');
+const env = require('./data/Env');
 
 /**
  * Основная точка входа.
