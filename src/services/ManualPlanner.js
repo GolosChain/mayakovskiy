@@ -3,12 +3,13 @@ const stats = core.utils.statsClient;
 const Post = require('../models/Post');
 const PlannerBasic = require('./PlannerBasic');
 
-class Planner extends PlannerBasic {
+class ManualPlanner extends PlannerBasic {
     async _aggregateData() {
         const timer = new Date();
         const data = (await Post.find(
             {
                 plan: null,
+                approved: true,
             },
             {
                 _id: true,
@@ -21,4 +22,4 @@ class Planner extends PlannerBasic {
     }
 }
 
-module.exports = Planner;
+module.exports = ManualPlanner;
