@@ -6,7 +6,7 @@ const BasicService = core.services.Basic;
 const BlockSubscribe = core.services.BlockSubscribe;
 const Moments = core.utils.Moments;
 const Post = require('../models/Post');
-const env = require('../data/env');
+const env = require('../data/Env');
 
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
