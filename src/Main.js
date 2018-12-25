@@ -4,7 +4,9 @@ const BasicMain = core.services.BasicMain;
 const MongoDB = core.services.MongoDB;
 const Registrator = require('./services/Registrator');
 const Planner = require('./services/Planner');
+const ManualPlanner = require('./services/ManualPlanner');
 const Liker = require('./services/Liker');
+const Connector = require('./services/Connector');
 const env = require('./data/env');
 
 /**
@@ -31,7 +33,11 @@ class Main extends BasicMain {
                 this.addNested(new Planner(Liker));
                 break;
             case 'manual':
-                // TODO: -
+                this.addNested(
+                    new Connector({
+                        ManualPlanner: new ManualPlanner(Liker),
+                    })
+                );
                 break;
             default:
                 throw new Error('GLS_PLANNER_MODE is not valid or undefined');

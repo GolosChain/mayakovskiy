@@ -15,6 +15,10 @@ module.exports = MongoDB.makeModel('Post', {
         type: Boolean,
         default: false,
     },
+    approved: {
+        type: Boolean,
+        default: null,
+    },
     plan: {
         type: MongoDB.type.ObjectId,
         default: null,

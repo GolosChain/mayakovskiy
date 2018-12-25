@@ -4,3 +4,4 @@ db
 .vscode
 DStore
 .env
+*.http
