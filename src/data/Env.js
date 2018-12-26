@@ -10,7 +10,9 @@ module.exports = {
     // принимаемые значения: 'auto' (по умолчанию) ,'manual'
     GLS_PLANNER_MODE: env.GLS_PLANNER_MODE || 'auto',
     GLS_ADMIN_USERNAME: env.GLS_ADMIN_USERNAME,
-    GLS_MIN_POST_LENGTH: Number(env.GLS_MIN_POST_LENGTH) || 0,
+    GLS_MIN_POST_VALUE: Number(env.GLS_MIN_POST_VALUE) || 0,
+    GLS_CONTENT_TYPE_DEFAULT: env.GLS_CONTENT_TYPE_DEFAULT || 'character',
+    GLS_CONTENT_VALUE_DEFAULT: Number(env.GLS_CONTENT_VALUE_DEFAULT) || 1,
 };
 
 if (module.exports.GLS_PROHIBITED_TAGS === 'false') {
