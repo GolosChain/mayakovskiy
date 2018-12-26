@@ -7,24 +7,44 @@ class Authorization extends BasicController {
         this.adminUsername = adminUsername;
     }
 
-    _checkAdmin({ username }) {
-        if (username !== this.adminUsername) {
+    _checkAdmin({ user }) {
+        if (user !== this.adminUsername) {
             throw {
                 code: 403,
                 message: 'Not an admin',
             };
         }
     }
-    async getAuthorizationsList({ username }) {
-        this._checkAdmin({ username });
+    async getAuthorizationsList({ user }) {
+        this._checkAdmin({ user });
         return await Authorizations.find({});
     }
 
-    async getRole({ username }) {
-        if (username === this.adminUsername) {
-            return { role: 'admin', username };
+    async hasAccess({ user }) {
+        try {
+            const authorization = await this.getRole({ user });
+            const role = authorization.result.role;
+
+            switch (role) {
+                case 'admin':
+                case 'moderator':
+                    return true;
+                default:
+                    return false;
+            }
+        } catch (error) {
+            // если роль юзера не найдена, то доступ запрещен
+            if (error.code === 404) {
+                return false;
+            } else throw error;
         }
-        const role = await Authorizations.findOne({ username: username });
+    }
+
+    async getRole({ user }) {
+        if (user === this.adminUsername) {
+            return { result: { role: 'admin', user } };
+        }
+        const role = await Authorizations.findOne({ username: user });
 
         if (!role) {
             throw {
@@ -35,13 +55,13 @@ class Authorization extends BasicController {
         return role;
     }
 
-    async revokeAccess({ username, targetUsername }) {
-        this._checkAdmin({ username });
+    async revokeAccess({ user, targetUsername }) {
+        this._checkAdmin({ user });
         return await Authorizations.remove({ username: targetUsername });
     }
 
-    async updateRole({ username, targetUsername, role }) {
-        this._checkAdmin({ username });
+    async updateRole({ user, targetUsername, role }) {
+        this._checkAdmin({ user });
         return await Authorizations.update({ username: targetUsername }, { $set: { role: role } });
     }
 
@@ -50,8 +70,8 @@ class Authorization extends BasicController {
         return !!authorization;
     }
 
-    async grantAccess({ username, targetUsername, role = 'moderator' }) {
-        this._checkAdmin({ username });
+    async grantAccess({ user, targetUsername, role = 'moderator' }) {
+        this._checkAdmin({ user });
         const alreadyExists = await this._checkAuthorizationExists({ targetUsername, role });
         if (!alreadyExists) {
             return await Authorizations.create({ username: targetUsername, role: role });

@@ -2,17 +2,35 @@ const core = require('gls-core-service');
 const BasicController = core.controllers.Basic;
 const Post = require('../models/Post');
 class Moderation extends BasicController {
-    async listPosts() {
-        return await Post.find({
-            approved: null,
-        });
+    async listPosts({ user }) {
+        if (await this.connector.Authorization.hasAccess({ user })) {
+            return await Post.find({
+                approved: null,
+            });
+        } else
+            throw {
+                code: 403,
+                message: 'Access denied',
+            };
     }
-    async denyPosts({ postIds }) {
-        return await this._markPostsApproval(postIds, false);
+    async denyPosts({ postIds, user }) {
+        if (await this.connector.Authorization.hasAccess({ user })) {
+            return await this._markPostsApproval(postIds, false);
+        } else
+            throw {
+                code: 403,
+                message: 'Access denied',
+            };
     }
 
-    async approvePosts({ postIds }) {
-        return await this._markPostsApproval(postIds, true);
+    async approvePosts({ postIds, user }) {
+        if (await this.connector.Authorization.hasAccess({ user })) {
+            return await this._markPostsApproval(postIds, true);
+        } else
+            throw {
+                code: 403,
+                message: 'Access denied',
+            };
     }
 
     async _markPostsApproval(postIds, approved = false) {
