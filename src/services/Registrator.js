@@ -6,8 +6,10 @@ const BasicService = core.services.Basic;
 const BlockSubscribe = core.services.BlockSubscribe;
 const Moments = core.utils.Moments;
 const Post = require('../models/Post');
+const ContentValue = require('../models/ContentValue');
 const env = require('../data/Env');
-
+const calculateValueForCriteria = require('../utils/ContentValueCalculator');
+const extractMetadata = require('../utils/MetadataParser.js');
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
  * Содержит систему самовосстановления после сбоев.
@@ -188,7 +190,7 @@ class Registrator extends BasicService {
     }
 
     async _basicValidation(post) {
-        const metadata = this._extractMetadata(post);
+        const metadata = extractMetadata(post);
 
         if (!this._validateTags(metadata)) {
             return false;
@@ -206,31 +208,20 @@ class Registrator extends BasicService {
             return false;
         }
 
-        if (!this._validatePostLength(post)) {
+        if (!this._validatePostValue(post)) {
             return false;
         }
 
         return true;
     }
 
-    _extractMetadata(post) {
-        let metadata;
-
-        try {
-            metadata = JSON.parse(post.json_metadata);
-
-            if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
-                metadata = {};
-            }
-        } catch (error) {
-            metadata = {};
+    async _validatePostValue(post) {
+        let postValue = 0;
+        const contentValues = await ContentValue.find({});
+        for (let criteria of contentValues) {
+            postValue += calculateValueForCriteria(post, criteria.contentType, criteria.value);
         }
-
-        return metadata;
-    }
-
-    _validatePostLength(post) {
-        return post.body.length >= env.GLS_MIN_POST_LENGTH;
+        return postValue >= env.GLS_MIN_POST_VALUE;
     }
 
     _validateTags(metadata) {
