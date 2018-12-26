@@ -17,7 +17,7 @@ class Moderation extends BasicController {
 
     async _markPostsApproval(postIds, approved = false) {
         const approvalRequests = [];
-        for (id of postIds) {
+        for (let id of postIds) {
             const update = {
                 $set: {
                     processed: true,
