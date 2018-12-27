@@ -7,9 +7,10 @@ const BlockSubscribe = core.services.BlockSubscribe;
 const Moments = core.utils.Moments;
 const Post = require('../models/Post');
 const ContentValue = require('../models/ContentValue');
-const env = require('../data/Env');
+const env = require('../data/env');
 const calculateValueForCriteria = require('../utils/ContentValueCalculator');
-const extractMetadata = require('../utils/MetadataParser.js');
+const extractMetadata = require('../utils/MetadataParser.js').parsePost;
+
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
  * Содержит систему самовосстановления после сбоев.
@@ -88,7 +89,8 @@ class Registrator extends BasicService {
 
             stats.timing('last_block_num_search', new Date() - timer);
         } catch (e) {
-            console.error(e);
+            Logger.error(e);
+            process.exit(1);
         }
     }
 
@@ -219,7 +221,11 @@ class Registrator extends BasicService {
         let postValue = 0;
         const contentValues = await ContentValue.find({});
         for (let criteria of contentValues) {
-            postValue += calculateValueForCriteria(post, criteria.contentType, criteria.value);
+            postValue += calculateValueForCriteria(
+                post,
+                criteria.contentType,
+                criteria.valueCoefficient
+            );
         }
         return postValue >= env.GLS_MIN_POST_VALUE;
     }

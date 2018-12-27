@@ -3,11 +3,11 @@ const stats = core.utils.statsClient;
 const BasicMain = core.services.BasicMain;
 const MongoDB = core.services.MongoDB;
 const Registrator = require('./services/Registrator');
-const Planner = require('./services/Planner');
+const AutoPlanner = require('./services/AutoPlanner');
 const ManualPlanner = require('./services/ManualPlanner');
 const Liker = require('./services/Liker');
 const Connector = require('./services/Connector');
-const env = require('./data/Env');
+const env = require('./data/env');
 
 /**
  * Основная точка входа.
@@ -29,6 +29,7 @@ class Main extends BasicMain {
 
     _getAuthorization() {
         const admin = env.GLS_ADMIN_USERNAME;
+
         if (!admin) {
             throw new Error('GLS_ADMIN_USERNAME is not set');
         }
@@ -38,17 +39,21 @@ class Main extends BasicMain {
     _choosePlannerMode() {
         switch (env.GLS_PLANNER_MODE) {
             case 'auto':
-                this.addNested(new Planner(Liker));
+                this.addNested(new AutoPlanner(Liker));
                 break;
+
             case 'manual':
                 const adminUsername = this._getAuthorization();
+                const manualPlanner = new ManualPlanner(Liker);
+
                 this.addNested(
                     new Connector({
-                        ManualPlanner: new ManualPlanner(Liker),
+                        manualPlanner,
                         adminUsername,
                     })
                 );
                 break;
+
             default:
                 throw new Error('GLS_PLANNER_MODE is not valid or undefined');
         }

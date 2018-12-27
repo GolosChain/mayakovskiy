@@ -1,31 +1,32 @@
 const core = require('gls-core-service');
 const BasicController = core.controllers.Basic;
 const ContentValue = require('../models/ContentValue');
-const Env = require('../data/Env');
+const Env = require('../data/env');
+
 class ContentValues extends BasicController {
     async initialize() {
         const amount = await ContentValue.estimatedDocumentCount();
         if (amount === 0) {
             return await ContentValue.create({
                 contentType: Env.GLS_CONTENT_TYPE_DEFAULT,
-                value: Env.GLS_CONTENT_VALUE_DEFAULT,
+                valueCoefficient: Env.GLS_CONTENT_VALUE_DEFAULT,
             });
         }
     }
     async getContentValueList({ user }) {
-        if (await this.connector.Authorization.hasAccess({ user })) {
+        if (await this.connector.Authorization.hasModerationAccess({ user })) {
             return await ContentValue.find({});
         }
     }
 
     async createContentValue({ user, contentValue }) {
-        if (await this.connector.Authorization.hasAccess({ user })) {
+        if (await this.connector.Authorization.hasModerationAccess({ user })) {
             return await ContentValue.create({ ...contentValue });
         }
     }
 
     async updateContentValue({ user, contentValue }) {
-        if (await this.connector.Authorization.hasAccess({ user })) {
+        if (await this.connector.Authorization.hasModerationAccess({ user })) {
             if (!contentValue._id) {
                 throw {
                     code: 400,
@@ -39,7 +40,7 @@ class ContentValues extends BasicController {
     }
 
     async deleteContentValue({ user, contentValue }) {
-        if (await this.connector.Authorization.hasAccess({ user })) {
+        if (await this.connector.Authorization.hasModerationAccess({ user })) {
             return await ContentValue.findAndDelete({ ...contentValue });
         }
     }

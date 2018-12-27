@@ -6,7 +6,7 @@ module.exports = MongoDB.makeModel('ContentValue', {
         type: String,
         required: true,
     },
-    value: {
+    valueCoefficient: {
         type: Number,
         required: true,
         default: 1,

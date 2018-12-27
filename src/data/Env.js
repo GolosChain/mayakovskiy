@@ -7,7 +7,6 @@ module.exports = {
     GLS_MIN_GOLOS_POWER: Number(env.GLS_MIN_GOLOS_POWER) || 0,
     GLS_PROHIBITED_TAGS: env.GLS_PROHIBITED_TAGS || 'goldvoice',
     GLS_GOLOS_APP_NAME: env.GLS_GOLOS_APP_NAME || 'golos.io/0.1',
-    // принимаемые значения: 'auto' (по умолчанию) ,'manual'
     GLS_PLANNER_MODE: env.GLS_PLANNER_MODE || 'auto',
     GLS_ADMIN_USERNAME: env.GLS_ADMIN_USERNAME,
     GLS_MIN_POST_VALUE: Number(env.GLS_MIN_POST_VALUE) || 0,

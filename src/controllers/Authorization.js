@@ -1,6 +1,7 @@
 const core = require('gls-core-service');
 const BasicController = core.controllers.Basic;
-const Authorizations = require('../models/Authorizations');
+const Authorizations = require('../models/Authorization');
+
 class Authorization extends BasicController {
     constructor({ connector, adminUsername }) {
         super({ connector });
@@ -20,7 +21,7 @@ class Authorization extends BasicController {
         return await Authorizations.find({});
     }
 
-    async hasAccess({ user }) {
+    async hasModerationAccess({ user }) {
         try {
             const authorization = await this.getRole({ user });
             const role = authorization.result.role;
@@ -33,7 +34,6 @@ class Authorization extends BasicController {
                     return false;
             }
         } catch (error) {
-            // если роль юзера не найдена, то доступ запрещен
             if (error.code === 404) {
                 return false;
             } else throw error;
@@ -72,9 +72,11 @@ class Authorization extends BasicController {
 
     async grantAccess({ user, targetUsername, role = 'moderator' }) {
         this._checkAdmin({ user });
+
         const alreadyExists = await this._checkAuthorizationExists({ targetUsername, role });
+
         if (!alreadyExists) {
-            return await Authorizations.create({ username: targetUsername, role: role });
+            return await Authorizations.create({ username: targetUsername, role });
         } else {
             return await Authorizations.findOne({
                 username: targetUsername,

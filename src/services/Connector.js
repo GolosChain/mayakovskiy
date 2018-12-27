@@ -5,34 +5,34 @@ const Authorization = require('../controllers/Authorization');
 const ContentValues = require('../controllers/ContentValues');
 
 class Connector extends BasicConnector {
-    constructor({ ManualPlanner, adminUsername }) {
+    constructor({ manualPlanner, adminUsername }) {
         super();
-        this.ManualPlanner = ManualPlanner;
-        this.Moderation = new Moderation({ connector: this });
-        this.Authorization = new Authorization({ connector: this, adminUsername });
-        this.ContentValues = new ContentValues({ connector: this });
+        this.manualPlanner = manualPlanner;
+        this.moderation = new Moderation({ connector: this });
+        this.authorization = new Authorization({ connector: this, adminUsername });
+        this.contentValues = new ContentValues({ connector: this });
     }
     async start() {
-        await this.ManualPlanner.start();
-        await this.ContentValues.initialize();
+        await this.manualPlanner.start();
+        await this.contentValues.initialize();
         await super.start({
             serverRoutes: {
-                listPosts: this.Moderation.listPosts.bind(this.Moderation),
-                denyPosts: this.Moderation.denyPosts.bind(this.Moderation),
-                approvePosts: this.Moderation.approvePosts.bind(this.Moderation),
-                getRole: this.Authorization.getRole.bind(this.Authorization),
-                getAuthorizationsList: this.Authorization.getAuthorizationsList.bind(
-                    this.Authorization
+                listPosts: this.moderation.listPosts.bind(this.moderation),
+                denyPosts: this.moderation.denyPosts.bind(this.moderation),
+                approvePosts: this.moderation.approvePosts.bind(this.moderation),
+                getRole: this.authorization.getRole.bind(this.authorization),
+                getAuthorizationsList: this.authorization.getAuthorizationsList.bind(
+                    this.authorization
                 ),
-                grantAccess: this.Authorization.grantAccess.bind(this.Authorization),
-                revokeAccess: this.Authorization.revokeAccess.bind(this.Authorization),
-                updateRole: this.Authorization.updateRole.bind(this.Authorization),
-                getContentValueList: this.ContentValues.getContentValueList.bind(
-                    this.ContentValues
+                grantAccess: this.authorization.grantAccess.bind(this.authorization),
+                revokeAccess: this.authorization.revokeAccess.bind(this.authorization),
+                updateRole: this.authorization.updateRole.bind(this.authorization),
+                getContentValueList: this.contentValues.getContentValueList.bind(
+                    this.contentValues
                 ),
-                createContentValue: this.ContentValues.createContentValue.bind(this.ContentValues),
-                updateContentValue: this.ContentValues.updateContentValue.bind(this.ContentValues),
-                deleteContentValue: this.ContentValues.deleteContentValue.bind(this.ContentValues),
+                createContentValue: this.contentValues.createContentValue.bind(this.contentValues),
+                updateContentValue: this.contentValues.updateContentValue.bind(this.contentValues),
+                deleteContentValue: this.contentValues.deleteContentValue.bind(this.contentValues),
             },
         });
     }
