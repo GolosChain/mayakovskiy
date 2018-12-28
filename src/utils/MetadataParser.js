@@ -12,7 +12,7 @@ class MetadataParser {
             metadata = {};
         }
 
-        return;
+        return metadata;
     }
 }
 

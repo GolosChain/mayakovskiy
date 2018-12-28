@@ -7,6 +7,7 @@ const AutoPlanner = require('./services/AutoPlanner');
 const ManualPlanner = require('./services/ManualPlanner');
 const Liker = require('./services/Liker');
 const Connector = require('./services/Connector');
+const Setup = require('./services/Setup');
 const env = require('./data/env');
 
 /**
@@ -23,7 +24,7 @@ class Main extends BasicMain {
     constructor() {
         super(stats, env);
 
-        this.addNested(new MongoDB(), new Registrator());
+        this.addNested(new MongoDB(), new Setup(), new Registrator());
         this._choosePlannerMode();
     }
 

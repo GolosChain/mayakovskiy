@@ -2,16 +2,15 @@ const extractMetadata = require('./MetadataParser');
 
 module.exports = (post, criteria, criteriaValue) => {
     switch (criteria) {
-        case 'character': {
+        case 'character':
             return post.body.length * criteriaValue;
-        }
-        case 'image': {
+
+        case 'image':
             const metadata = extractMetadata(post);
             const images = metadata.image || [];
             return images.length * criteriaValue;
-        }
-        default: {
+
+        default:
             return 0;
-        }
     }
 };

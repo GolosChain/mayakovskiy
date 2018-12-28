@@ -14,10 +14,9 @@ class Connector extends BasicConnector {
     }
     async start() {
         await this.manualPlanner.start();
-        await this.contentValues.initialize();
         await super.start({
             serverRoutes: {
-                listPosts: this.moderation.listPosts.bind(this.moderation),
+                getPosts: this.moderation.getPosts.bind(this.moderation),
                 denyPosts: this.moderation.denyPosts.bind(this.moderation),
                 approvePosts: this.moderation.approvePosts.bind(this.moderation),
                 getRole: this.authorization.getRole.bind(this.authorization),

@@ -9,7 +9,7 @@ const Post = require('../models/Post');
 const ContentValue = require('../models/ContentValue');
 const env = require('../data/env');
 const calculateValueForCriteria = require('../utils/ContentValueCalculator');
-const extractMetadata = require('../utils/MetadataParser.js').parsePost;
+const MetadataParser = require('../utils/MetadataParser.js');
 
 /**
  * Сервис регистрации новых постов со встроенной фильтрацией.
@@ -88,8 +88,8 @@ class Registrator extends BasicService {
             }
 
             stats.timing('last_block_num_search', new Date() - timer);
-        } catch (e) {
-            Logger.error(e);
+        } catch (error) {
+            Logger.error(error);
             process.exit(1);
         }
     }
@@ -192,7 +192,7 @@ class Registrator extends BasicService {
     }
 
     async _basicValidation(post) {
-        const metadata = extractMetadata(post);
+        const metadata = MetadataParser.parsePost(post);
 
         if (!this._validateTags(metadata)) {
             return false;

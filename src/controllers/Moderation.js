@@ -3,8 +3,8 @@ const BasicController = core.controllers.Basic;
 const Post = require('../models/Post');
 
 class Moderation extends BasicController {
-    async listPosts({ user }) {
-        if (await this.connector.Authorization.hasModerationAccess({ user })) {
+    async getPosts({ user }) {
+        if (await this.connector.authorization.hasModerationAccess({ user })) {
             return await Post.find({
                 approved: null,
             });
@@ -15,7 +15,7 @@ class Moderation extends BasicController {
             };
     }
     async denyPosts({ postIds, user }) {
-        if (await this.connector.Authorization.hasModerationAccess({ user })) {
+        if (await this.connector.authorization.hasModerationAccess({ user })) {
             return await this._markPostsApproval(postIds, false);
         } else
             throw {
@@ -25,7 +25,7 @@ class Moderation extends BasicController {
     }
 
     async approvePosts({ postIds, user }) {
-        if (await this.connector.Authorization.hasModerationAccess({ user })) {
+        if (await this.connector.authorization.hasModerationAccess({ user })) {
             return await this._markPostsApproval(postIds, true);
         } else
             throw {
